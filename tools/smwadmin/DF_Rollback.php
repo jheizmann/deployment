@@ -72,16 +72,24 @@ class Rollback {
 	 */
 	public function saveDatabase() {
 		global $mwrootDir;
-		require_once "$mwrootDir/AdminSettings.php";
+		if (file_exists("$mwrootDir/AdminSettings.php")) {
+			require_once "$mwrootDir/AdminSettings.php";
+		} else {
+			// possible since MW 1.16
+			$wgDBadminuser = $this->getVariableValue("LocalSettings.php", "wgDBadminuser");
+			$wgDBadminpassword = $this->getVariableValue("LocalSettings.php", "wgDBadminpassword");
+		}
+
+
 		if (!$this->acquireNewRollback()) return;
 		// make sure to save only once
 		static $savedDataBase = false;
 		if ($savedDataBase) return true;
 
 		$savedDataBase = true;
-		$wgDBname = $this->getDatabasename();
+		$wgDBname = $this->getVariableValue("LocalSettings.php", "wgDBname");
 		print "\n[Saving database...";
-		//print "\nmysqldump -u $wgDBadminuser --password=$wgDBadminpassword $wgDBname > ".$this->tmpDir."/rollback_data/dump.sql";
+		print "\nmysqldump -u $wgDBadminuser --password=$wgDBadminpassword $wgDBname > ".$this->tmpDir."/rollback_data/dump.sql";
 		exec("mysqldump -u $wgDBadminuser --password=$wgDBadminpassword $wgDBname > ".$this->tmpDir."/dump.sql", $out, $ret);
 		if ($ret != 0) print "\nWarning: Could not save database for rollback"; else print "done.]";
 		return $ret == 0;
@@ -113,7 +121,7 @@ class Rollback {
 	/**
 	 * Acquires a new rollback operation. The user has to confirm to
 	 * overwrite exisiting rollback data.
-	 * 
+	 *
 	 * @return boolean True if a rollback should be done.
 	 */
 	private function acquireNewRollback() {
@@ -145,8 +153,14 @@ class Rollback {
 	 */
 	private function restoreDatabase() {
 		global $mwrootDir;
-		require_once "$mwrootDir/AdminSettings.php";
-		$wgDBname = $this->getDatabasename();
+		if (file_exists("$mwrootDir/AdminSettings.php")) {
+			require_once "$mwrootDir/AdminSettings.php";
+		} else {
+			// possible since MW 1.16
+			$wgDBadminuser = $this->getVariableValue("LocalSettings.php", "wgDBadminuser");
+			$wgDBadminpassword = $this->getVariableValue("LocalSettings.php", "wgDBadminpassword");
+		}
+		$wgDBname = $this->getVariableValue("LocalSettings.php", "wgDBname");
 		if (!file_exists($this->tmpDir."/dump.sql")) return false; // nothing to restore
 		print "\n[Restore database...";
 
@@ -157,12 +171,15 @@ class Rollback {
 
 	/**
 	 *
-	 * Reads databasename from LocalSettings.php
+	 * Reads variables value.
+	 *
+	 * @param $file File path (relative to MW directory)
+	 * @param $varname Variable name
 	 */
-	private function getDatabasename() {
+	private function getVariableValue($file,$varname) {
 		global $mwrootDir;
-		$ls_content = file_get_contents("$mwrootDir/LocalSettings.php");
-		preg_match('/\$wgDBname\s*=\s*["\']([^"\']+)["\']/', $ls_content, $matches);
+		$ls_content = file_get_contents("$mwrootDir/$file");
+		preg_match('/\$'.$varname.'\s*=\s*["\']([^"\']+)["\']/', $ls_content, $matches);
 		return $matches[1];
 	}
 
