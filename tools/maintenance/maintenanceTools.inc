@@ -62,7 +62,12 @@ class MaintenanceTools {
 			$dependencies = $p->getDependencies();
 			foreach($dependencies as $dep) {
 				list($id, $min, $max, $optional, $message) = $dep;
-
+				
+                if ($optional) {
+                	// ignore optional extensions
+                	continue;
+                }
+				
 				// check if dependant package exists
 				if (!array_key_exists($id, $localPackages)) {
 					$out[$p->getID()][]= "Extension missing: ".$id;
