@@ -445,10 +445,11 @@ class Tools {
 		$pDescriptionTitle = Title::newFromText($dfgLang->getLanguageString('df_description'), SMW_NS_PROPERTY);
 		$pDescription = SMWPropertyValue::makeUserProperty($dfgLang->getLanguageString('df_description'));
 		$pDescriptionValue = $pDescription->getTypesValue();
-		if (reset($pDescriptionValue->getDBkeys()) != '_str') {
-			print "\n'".$pDescriptionTitle->getPrefixedText()."' is not a string type.";
-			$check = false;
-		}
+	    $typeID = reset($pDescriptionValue->getDBkeys());
+        if ($typeID != '_str' && $typeID != '_txt') {
+            print "\n'".$pDescriptionTitle->getPrefixedText()."' is not a string/text type.";
+            $check = false;
+        }
 		return $check;
 	}
 
