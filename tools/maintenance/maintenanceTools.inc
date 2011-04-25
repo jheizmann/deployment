@@ -391,8 +391,8 @@ class ConsistencyChecker {
 	 * @param int $format
 	 * @param boolean $nowiki
 	 */
-	private function checkExistingExtensions($format, $nowiki = false) {
-		if ($nowiki) return false;
+	private function checkExistingExtensions($format, $addChecks = true) {
+		if (!$addChecks) return false;
 
 		global $wgExtensionCredits;
 		$ls = file_get_contents($this->rootDir."/LocalSettings.php");
@@ -455,7 +455,7 @@ class ConsistencyChecker {
 							}
 							break;
 						case 'Semantic Result Formats':
-							if (strpos($ls, '/*start-semanticresultsformats*/') === false) {
+							if (strpos($ls, '/*start-semanticresultformats*/') === false) {
 								$this->statusLog[] = $this->out(array("\n","\t","[FAILED]","Semantic Result Formats Extension is already installed but not visible to DF."), $format);
 								$errorFound=true;
 							}
