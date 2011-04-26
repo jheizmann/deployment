@@ -165,7 +165,7 @@ class Tools {
 			}
 
 			$dirHandle=opendir($source);
-			while($file=readdir($dirHandle))
+			while(false !== ($file=readdir($dirHandle)))
 			{
 				if($file!="." && $file!="..")
 				{
