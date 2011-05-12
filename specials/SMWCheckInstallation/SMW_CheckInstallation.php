@@ -1,11 +1,11 @@
-<?php 
+<?php
 /**
  * @file
  * @ingroup SMWCheckInstallation
- * 
- * @defgroup SMWCheckInstallation 
+ *
+ * @defgroup SMWCheckInstallation
  * @ingroup SMWHaloSpecials
- * 
+ *
  * @author Kai Kühn
  */
 if (!defined('MEDIAWIKI')) die();
@@ -25,16 +25,22 @@ class SMWCheckInstallation extends SpecialPage {
 	 */
 	public function execute($par) {
 		global $wgOut,$wgScriptPath;
-	   $wgOut->addLink(array('rel'   => 'stylesheet','type'  => 'text/css',
+		$wgOut->addLink(array('rel'   => 'stylesheet','type'  => 'text/css',
                         'media' => 'screen, projection','href'  => $wgScriptPath . '/deployment/skins/df.css'));
-       
+		 
 		$wgOut->setPageTitle(wfMsg('checkinstallation'));
-		$wgOut->addHTML("<h2>".wfMsg('checkinstallation')."</h2>");
 		global $IP;
+
+		// (1) show installation path
+		$wgOut->addHTML("<h2>".wfMsg('df_installationpath_heading')."</h2>");
+		$wgOut->addHTML("$IP/deployment");
+
+		// (2) consistency checks
+		$wgOut->addHTML("<h2>".wfMsg('checkinstallation')."</h2>");
 		global $rootDir;
 		$rootDir = "$IP/deployment";
 		if (!file_exists("$IP/deployment/tools/maintenance/maintenanceTools.inc")) {
-		      $wgOut->addHTML("No deployment framework installed! Please install to use this feature.");
+			$wgOut->addHTML("No deployment framework installed! Please install to use this feature.");
 		}
 		require_once "$IP/deployment/tools/maintenance/maintenanceTools.inc";
 		$cc = new ConsistencyChecker($IP);

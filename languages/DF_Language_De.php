@@ -33,10 +33,13 @@ class DF_Language_De extends DF_Language {
 	'df_contentbundle' => 'Content bundle',
     'df_ontologyuri' => 'Ontologie URI',
 	
-	'checkinstallation' => 'Prüfe Installation',
 	'category' => 'Kategorie',
 	'is_inverse_of' => 'Ist invers zu',
     'has_domain_and_range' => 'Hat Domain und Range',
-	'imported_from'=>'Importiert aus'
+	'imported_from'=>'Importiert aus',
+	
+	// user
+	'checkinstallation' => 'Prüfe Installation',
+	'df_installationpath_heading' => "Installationsverzeichnis des Deployment-Frameworks"
 	);
 }

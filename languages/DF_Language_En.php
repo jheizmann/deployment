@@ -41,7 +41,8 @@ class DF_Language_En extends DF_Language {
 	'imported_from'=>'Imported from',
 
 	// user
-	'checkinstallation' => 'Check Installation'
+	'checkinstallation' => 'Check Installation',
+	'df_installationpath_heading' => "Installation path of deployment framework"
 	
 	);
 
