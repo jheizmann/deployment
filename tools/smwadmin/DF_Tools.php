@@ -32,10 +32,14 @@ class Tools {
 	 *
 	 * @return boolean
 	 */
-	public static function isWindows() {
+	public static function isWindows(& $version = '') {
 		static $thisBoxRunsWindows;
+		static $os;
 
-		if (! is_null($thisBoxRunsWindows)) return $thisBoxRunsWindows;
+		if (! is_null($thisBoxRunsWindows)) {
+			$version = $os;
+			return $thisBoxRunsWindows;
+		}
 
 		ob_start();
 		phpinfo();
@@ -44,8 +48,15 @@ class Tools {
 		//Get Systemstring
 		preg_match('!\nSystem(.*?)\n!is',strip_tags($info),$ma);
 		//Check if it consists 'windows' as string
-		preg_match('/[Ww]indows/',$ma[1],$os);
+		preg_match('/[Ww]indows.*/',$ma[1],$os);
 		$thisBoxRunsWindows= count($os) > 0;
+
+
+		if ($thisBoxRunsWindows && (strpos($os[0], "6.1") !== false)) {
+			$version = "Windows 7";
+			$os = $version;
+		}
+
 		return $thisBoxRunsWindows;
 	}
 
@@ -445,11 +456,11 @@ class Tools {
 		$pDescriptionTitle = Title::newFromText($dfgLang->getLanguageString('df_description'), SMW_NS_PROPERTY);
 		$pDescription = SMWPropertyValue::makeUserProperty($dfgLang->getLanguageString('df_description'));
 		$pDescriptionValue = $pDescription->getTypesValue();
-	    $typeID = reset($pDescriptionValue->getDBkeys());
-        if ($typeID != '_str' && $typeID != '_txt') {
-            print "\n'".$pDescriptionTitle->getPrefixedText()."' is not a string/text type.";
-            $check = false;
-        }
+		$typeID = reset($pDescriptionValue->getDBkeys());
+		if ($typeID != '_str' && $typeID != '_txt') {
+			print "\n'".$pDescriptionTitle->getPrefixedText()."' is not a string/text type.";
+			$check = false;
+		}
 		return $check;
 	}
 
@@ -515,133 +526,198 @@ class Tools {
 		$dd = new DeployDescriptor(file_get_contents($tempFile."/deploy.xml"));
 		return $dd;
 	}
-	
-	/**
-     * Removes articles belonging to a bundle. It is assumed that everything other than instances of categories of a bundle
-     * and templates used by such is marked with the 'Part of bundle' annotation. Templates which are used by pages other than
-     * that are kept.
-     *
-     * @param string $ext_id
-     * @param Logger $logger
-     */
-    public static function deletePagesOfBundle($ext_id, $logger = NULL) {
-        global $dfgLang;
-        global $wgUser;
 
-        $db =& wfGetDB( DB_MASTER );
-        $smw_ids = $db->tableName('smw_ids');
-        $smw_rels2 = $db->tableName('smw_rels2');
-        $page = $db->tableName('page');
-        $categorylinks = $db->tableName('categorylinks');
-        $templatelinks = $db->tableName('templatelinks');
-        $db->query( 'CREATE TEMPORARY TABLE df_page_of_bundle (id INT(8) NOT NULL)
+	/**
+	 * Unzips a file from a zip archive.
+	 *
+	 * @param $zipFile Full path to zip file
+	 * @param $filePath File to extract from zip (may be partial if unique)
+	 * @param $destDir Destination file dir
+	 *
+	 * @return boolean True, if succesfull
+	 */
+	public static function unzipFile($zipFile, $filePath, $destDir) {
+		$zipFile = Tools::makeUnixPath($zipFile);
+		if (!file_exists($zipFile)) return NULL;
+		exec('unzip -l "'.$zipFile.'"', $output, $res);
+		foreach($output as $o) {
+			if (strpos($o, $filePath) !== false) {
+				$out = $o;
+				break;
+			}
+		}
+		if (!isset($out)) return false;
+		$dd_path = reset(array_reverse(explode(" ", $out)));
+		exec('unzip -o -j "'.$zipFile.'" "'.$dd_path.'" -d "'.$destDir.'"', $output, $res);
+		return $res == 0;
+	}
+
+
+	/**
+	 * Removes articles belonging to a bundle. It is assumed that everything other than instances of categories of a bundle
+	 * and templates used by such is marked with the 'Part of bundle' annotation. Templates which are used by pages other than
+	 * that are kept.
+	 *
+	 * @param string $ext_id
+	 * @param Logger $logger
+	 */
+	public static function deletePagesOfBundle($ext_id, $logger = NULL) {
+		global $dfgLang;
+		global $wgUser;
+
+		$db =& wfGetDB( DB_MASTER );
+		$smw_ids = $db->tableName('smw_ids');
+		$smw_rels2 = $db->tableName('smw_rels2');
+		$page = $db->tableName('page');
+		$categorylinks = $db->tableName('categorylinks');
+		$templatelinks = $db->tableName('templatelinks');
+		$db->query( 'CREATE TEMPORARY TABLE df_page_of_bundle (id INT(8) NOT NULL)
                     TYPE=MEMORY', 'SMW::createVirtualTableForPagesOfBundle' );
 
-        $db->query( 'CREATE TEMPORARY TABLE df_page_of_templates_used (title  VARCHAR(255) NOT NULL)
+		$db->query( 'CREATE TEMPORARY TABLE df_page_of_templates_used (title  VARCHAR(255) NOT NULL)
                     TYPE=MEMORY', 'SMW::createVirtualTableForTemplatesUsed' );
-        $db->query( 'CREATE TEMPORARY TABLE df_page_of_templates_must_persist (title  VARCHAR(255) NOT NULL)
+		$db->query( 'CREATE TEMPORARY TABLE df_page_of_templates_must_persist (title  VARCHAR(255) NOT NULL)
                     TYPE=MEMORY', 'SMW::createVirtualTableForTemplatesUsed' );
 
-        $partOfBundlePropertyID = smwfGetStore()->getSMWPropertyID(SMWPropertyValue::makeUserProperty($dfgLang->getLanguageString("df_partofbundle")));
-        $ext_id = strtoupper(substr($ext_id, 0, 1)).substr($ext_id, 1);
-        $partOfBundleID = smwfGetStore()->getSMWPageID($ext_id, NS_MAIN, "");
+		$partOfBundlePropertyID = smwfGetStore()->getSMWPropertyID(SMWPropertyValue::makeUserProperty($dfgLang->getLanguageString("df_partofbundle")));
+		$ext_id = strtoupper(substr($ext_id, 0, 1)).substr($ext_id, 1);
+		$partOfBundleID = smwfGetStore()->getSMWPageID($ext_id, NS_MAIN, "");
 
-        // put all pages belonging to a bundle (all except templates, ie. categories, properties, instances of categories and all other pages denoted by
-        // the 'part of bundle' annotation like Forms, Help pages, etc..) in df_page_of_bundle
-        $db->query('INSERT INTO df_page_of_bundle (SELECT page_id FROM '.$page.' JOIN '.$smw_ids.' ON smw_namespace = page_namespace AND smw_title = page_title JOIN '.$smw_rels2.' ON smw_id = s_id WHERE p_id = '.$partOfBundlePropertyID.' AND o_id = '.$partOfBundleID.')');
-        $db->query('INSERT INTO df_page_of_bundle (SELECT cl_from FROM '.$categorylinks.' JOIN '.$page.' ON cl_to = page_title AND page_namespace = '.NS_CATEGORY.' JOIN '.$smw_ids.' ON smw_namespace = page_namespace AND smw_title = page_title JOIN '.$smw_rels2.' ON smw_id = s_id WHERE p_id = '.$partOfBundlePropertyID.' AND o_id = '.$partOfBundleID.')');
+		// put all pages belonging to a bundle (all except templates, ie. categories, properties, instances of categories and all other pages denoted by
+		// the 'part of bundle' annotation like Forms, Help pages, etc..) in df_page_of_bundle
+		$db->query('INSERT INTO df_page_of_bundle (SELECT page_id FROM '.$page.' JOIN '.$smw_ids.' ON smw_namespace = page_namespace AND smw_title = page_title JOIN '.$smw_rels2.' ON smw_id = s_id WHERE p_id = '.$partOfBundlePropertyID.' AND o_id = '.$partOfBundleID.')');
+		$db->query('INSERT INTO df_page_of_bundle (SELECT cl_from FROM '.$categorylinks.' JOIN '.$page.' ON cl_to = page_title AND page_namespace = '.NS_CATEGORY.' JOIN '.$smw_ids.' ON smw_namespace = page_namespace AND smw_title = page_title JOIN '.$smw_rels2.' ON smw_id = s_id WHERE p_id = '.$partOfBundlePropertyID.' AND o_id = '.$partOfBundleID.')');
 
-        // get all templates used on these pages
-        $db->query('INSERT INTO df_page_of_templates_used (SELECT tl_title FROM '.$templatelinks.' WHERE tl_from IN (SELECT * FROM df_page_of_bundle))');
+		// get all templates used on these pages
+		$db->query('INSERT INTO df_page_of_templates_used (SELECT tl_title FROM '.$templatelinks.' WHERE tl_from IN (SELECT * FROM df_page_of_bundle))');
 
-        // get all templates which are also used on other pages and must therefore persist
-        $db->query('INSERT INTO df_page_of_templates_must_persist (SELECT title FROM df_page_of_templates_used JOIN '.$templatelinks.' ON title = tl_title AND tl_from NOT IN (SELECT * FROM df_page_of_bundle))');
+		// get all templates which are also used on other pages and must therefore persist
+		$db->query('INSERT INTO df_page_of_templates_must_persist (SELECT title FROM df_page_of_templates_used JOIN '.$templatelinks.' ON title = tl_title AND tl_from NOT IN (SELECT * FROM df_page_of_bundle))');
 
-        // delete those from the table of used templates
-        $db->query('DELETE FROM df_page_of_templates_used WHERE title IN (SELECT * FROM df_page_of_templates_must_persist)');
+		// delete those from the table of used templates
+		$db->query('DELETE FROM df_page_of_templates_used WHERE title IN (SELECT * FROM df_page_of_templates_must_persist)');
 
-        // select all templates which can be deleted
-        $res = $db->query('SELECT DISTINCT title FROM df_page_of_templates_used');
+		// select all templates which can be deleted
+		$res = $db->query('SELECT DISTINCT title FROM df_page_of_templates_used');
 
-        // DELETE templates
-        if($db->numRows( $res ) > 0) {
-            while($row = $db->fetchObject($res)) {
+		// DELETE templates
+		if($db->numRows( $res ) > 0) {
+			while($row = $db->fetchObject($res)) {
 
-                $title = Title::newFromText($row->title, NS_TEMPLATE);
-                
-                $a = new Article($title);
-                $id = $title->getArticleID( GAID_FOR_UPDATE );
-                if( wfRunHooks('ArticleDelete', array(&$a, &$wgUser, &$reason, &$error)) ) {
-                    if( $a->doDeleteArticle( "ontology removed: ".$ext_id ) ) {
-                        if (!is_null($logger)) $logger->info("Removing page: ".$title->getPrefixedText());
-                        print "\n\t[Removing page]: ".$title->getPrefixedText()."...";
-                        wfRunHooks('ArticleDeleteComplete', array(&$a, &$wgUser, "ontology removed: ".$ext_id, $id));
-                        print "done.]";
-                    }
-                }
+				$title = Title::newFromText($row->title, NS_TEMPLATE);
 
-            }
-        }
-        $db->freeResult($res);
+				$a = new Article($title);
+				$id = $title->getArticleID( GAID_FOR_UPDATE );
+				if( wfRunHooks('ArticleDelete', array(&$a, &$wgUser, &$reason, &$error)) ) {
+					if( $a->doDeleteArticle( "ontology removed: ".$ext_id ) ) {
+						if (!is_null($logger)) $logger->info("Removing page: ".$title->getPrefixedText());
+						print "\n\t[Removing page]: ".$title->getPrefixedText()."...";
+						wfRunHooks('ArticleDeleteComplete', array(&$a, &$wgUser, "ontology removed: ".$ext_id, $id));
+						print "done.]";
+					}
+				}
 
-        // DELETE pages of bundle
-        $res = $db->query('SELECT DISTINCT id FROM df_page_of_bundle');
+			}
+		}
+		$db->freeResult($res);
 
-        if($db->numRows( $res ) > 0) {
-            while($row = $db->fetchObject($res)) {
+		// DELETE pages of bundle
+		$res = $db->query('SELECT DISTINCT id FROM df_page_of_bundle');
 
-                $title = Title::newFromID($row->id);
+		if($db->numRows( $res ) > 0) {
+			while($row = $db->fetchObject($res)) {
 
-                if (is_null($title)) {
-                    if (!is_null($logger)) $logger->error("Invalid page ID: ".$row->id);
-                    continue;
-                }
-                // DELETE
-                $a = new Article($title);
-                $id = $row->id;
-                if( wfRunHooks('ArticleDelete', array(&$a, &$wgUser, &$reason, &$error)) ) {
-                    if( $a->doDeleteArticle( "ontology removed: ".$ext_id ) ) {
-                        if (!is_null($logger)) $logger->info("Removing page: ".$title->getPrefixedText());
-                        print "\n\t[Removing page]: ".$title->getPrefixedText()."...";
-                        
-                        wfRunHooks('ArticleDeleteComplete', array(&$a, &$wgUser, "ontology removed: ".$ext_id, $id));
-                        print "done.]";
-                    }
-                }
+				$title = Title::newFromID($row->id);
 
-            }
-        }
-        $db->freeResult($res);
+				if (is_null($title)) {
+					if (!is_null($logger)) $logger->error("Invalid page ID: ".$row->id);
+					continue;
+				}
+				// DELETE
+				$a = new Article($title);
+				$id = $row->id;
+				if( wfRunHooks('ArticleDelete', array(&$a, &$wgUser, &$reason, &$error)) ) {
+					if( $a->doDeleteArticle( "ontology removed: ".$ext_id ) ) {
+						if (!is_null($logger)) $logger->info("Removing page: ".$title->getPrefixedText());
+						print "\n\t[Removing page]: ".$title->getPrefixedText()."...";
 
-        $db->query('DROP TEMPORARY TABLE df_page_of_bundle');
-        $db->query('DROP TEMPORARY TABLE df_page_of_templates_used');
-        $db->query('DROP TEMPORARY TABLE df_page_of_templates_must_persist');
-    }
-    
-    /**
-     * Removes the (last) file ending.
-     * 
-     * @param $filename
-     */
-    public static function removeFileEnding($filename) {
-    	$index = strrpos($filename, ".");
-    	if ($index === false) return $filename;
-    	return substr($filename, 0, $index);
-    }
-        
-    /**
-     * Returns the location of a file (first occurence if more than on exist).
-     *  
-     * @param string $name
-     * 
-     */
-    public static function whereis($name) {
-        if (self::isWindows()) {
-            exec("whereis.bat $name", $out, $ret);
-            return str_replace("\\", "/", reset($out));
-        } else {
-            exec("whereis $name", $out, $ret);
-            return reset($out);
-        }
-    }
+						wfRunHooks('ArticleDeleteComplete', array(&$a, &$wgUser, "ontology removed: ".$ext_id, $id));
+						print "done.]";
+					}
+				}
+
+			}
+		}
+		$db->freeResult($res);
+
+		$db->query('DROP TEMPORARY TABLE df_page_of_bundle');
+		$db->query('DROP TEMPORARY TABLE df_page_of_templates_used');
+		$db->query('DROP TEMPORARY TABLE df_page_of_templates_must_persist');
+	}
+
+	/**
+	 * Removes the (last) file ending.
+	 *
+	 * @param $filename
+	 */
+	public static function removeFileEnding($filename) {
+		$index = strrpos($filename, ".");
+		if ($index === false) return $filename;
+		return substr($filename, 0, $index);
+	}
+
+	/**
+	 * Returns the location of a file (first occurence if more than on exist).
+	 *
+	 * @param string $name
+	 *
+	 */
+	public static function whereis($name) {
+		if (self::isWindows()) {
+			exec("whereis.bat $name", $out, $ret);
+			return str_replace("\\", "/", reset($out));
+		} else {
+			exec("whereis $name", $out, $ret);
+			return reset($out);
+		}
+	}
+
+	/**
+	 * Add Separaters for version number. Default is dot.
+	 *
+	 * @param $version
+	 * @param $patchlevel
+	 * @param $sep default is dot
+	 *
+	 * @return string
+	 */
+	public static function addSeparators($version, $patchlevel = 0, $sep = ".") {
+		$sep_version = "";
+		for($i = 0; $i < strlen($version); $i++) {
+			if ($i>0) $sep_version .= $sep;
+			$sep_version .= $version[$i];
+		}
+		$sep_version .= "_$patchlevel";
+		return $sep_version;
+	}
+
+	/**
+	 * Returns file extension
+	 *
+	 * @param $filePath
+	 * @return string
+	 */
+	public static function getFileExtension($filePath) {
+		$parts = explode(".", $filePath);
+		$extension = reset(array_reverse($parts));
+		return $extension;
+	}
+
+	/**
+	 * Escapes XML attribute values
+	 * @param $text
+	 */
+	public static function escapeForXMLAttribute($text) {
+		return str_replace('"', "&quot;", $text);
+	}
 }
