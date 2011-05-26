@@ -337,8 +337,7 @@ class Installer {
 		$allPackages = PackageRepository::getAllPackages();
 		$localPackages = PackageRepository::getLocalPackages($this->rootDir.'/extensions');
 		if (count($allPackages) == 0) {
-			print "\n\nNo packages available!\n";
-			return;
+			print "\n\nNo packages found in repositories!\n";
 		}
 		print "\n Installed           | Bundle               | Av. versions  | Repository";
 		print "\n-------------------------------------------------------------------------\n";
