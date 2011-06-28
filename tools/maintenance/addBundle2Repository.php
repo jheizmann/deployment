@@ -160,7 +160,8 @@ if ($mediawiki) {
         <version>$version</version>
         <id>mw</id>
         <instdir></instdir>
-        <vendor>Mediawiki</vendor>
+        <vendor>Ontoprise GmbH</vendor>
+        <maintainer>Wikimedia foundation</maintainer>
         <description>MediaWiki is a free software open source wiki package written in PHP, originally for use on Wikipedia.</description>
         <helpurl>http://www.mediawiki.org/wiki/MediaWiki</helpurl>
         <license>GPL-v2</license>
