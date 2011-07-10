@@ -74,7 +74,7 @@ $(function() {
 					dialog[0].innerHTML += resultLog; 
 					dialog[0].scrollTop = dialog[0].scrollHeight;
 				}
-				if (xhr3.responseText.indexOf("__OK__") != -1 || xhr3.responseText.indexOf("$$NOTEXISTS$$") != -1) {
+				if (xhr3.responseText.indexOf("__OK__") != -1 || xhr3.responseText.indexOf("$$NOTEXISTS$$") != -1 || xhr3.responseText.indexOf("$$ERROR$$") != -1) {
 					clearTimeout(timer);
 					$('#df_progress_indicator').hide();
 					// finished installation

@@ -96,7 +96,7 @@ class ResourceInstaller {
 		$this->logger->info("Refreshing ontology: $file");
 		$id = $dd->getID();
 		$phpExe = 'php';
-		if (array_key_exists('df_php_executable', DF_Config::$settings)) {
+		if (array_key_exists('df_php_executable', DF_Config::$settings)  && !empty(DF_Config::$settings['df_php_executable'])) {
 			$phpExe = DF_Config::$settings['df_php_executable'];
 		}
 		system("\"$phpExe\" \"$rootDir/tools/maintenance/refreshPages.php\" -d \"$dumpPath\" -b $id");

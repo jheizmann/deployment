@@ -46,7 +46,7 @@ class DFCommandInterface {
 	 */
 	public function __construct() {
 		$this->phpExe = 'php';
-		if (array_key_exists('df_php_executable', DF_Config::$settings)) {
+		if (array_key_exists('df_php_executable', DF_Config::$settings)  && !empty(DF_Config::$settings['df_php_executable'])) {
 			$this->phpExe = DF_Config::$settings['df_php_executable'];
 		}
 	}
@@ -121,8 +121,8 @@ class DFCommandInterface {
 		$result['resources'] = $dd->getResources();
 		$result['onlycopyresources'] = $dd->getOnlyCopyResources();
 
-
-		$runCommand = "php $mwrootDir/deployment/tools/smwadmin/smwadmin.php --listpages $extid --outputformat json --nocheck --noask";
+        $php = $this->phpExe;
+		$runCommand = "$php $mwrootDir/deployment/tools/smwadmin/smwadmin.php --listpages $extid --outputformat json --nocheck --noask";
 		exec($runCommand, $out, $ret);
 
 		$outText = implode("",$out);
