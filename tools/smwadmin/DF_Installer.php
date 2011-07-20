@@ -32,6 +32,7 @@ define('DEPLOY_FRAMEWORK_ONTOLOGYCONVERSION_FAILED', 13);
 define('DEPLOY_FRAMEWORK_WRONG_VERSION', 14);
 define('DEPLOY_FRAMEWORK_UNCOMPRESS_ERROR', 15);
 define('DEPLOY_FRAMEWORK_ONTOLOGYCONFLICT_ERROR', 16);
+define('DEPLOY_FRAMEWORK_INVALID_RESTOREPOINT', 17);
 
 
 require_once 'DF_PackageRepository.php';
@@ -965,8 +966,9 @@ class Installer {
 			// check if a local extension has $dd as a dependency
 			$dep = $p->getDependency($dd->getID());
 			if ($dep == NULL) continue;
-			list($id, $from, $to) = $dep;
-
+			list($id, $from, $to, $optional) = $dep;
+            if ($optional) continue;
+            
 			// if $dd's version exceeds the limit of the installed,
 			// try to find an update
 			if ($dd->getVersion() > $to) {

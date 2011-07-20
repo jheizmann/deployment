@@ -29,7 +29,7 @@
  *
  *
  */
-define('DEPLOY_FRAMEWORK_VERSION', '1.5.6_0 [B${env.BUILD_NUMBER}]');
+define('DEPLOY_FRAMEWORK_VERSION', '{{$VERSION}} [B${env.BUILD_NUMBER}]');
 
 // termination constants
 define('DF_TERMINATION_WITH_FINALIZE', 0);
@@ -67,13 +67,13 @@ $dfgLogToFile=false;
 $dfgOutputFormat="text";
 $args = $_SERVER['argv'];
 for( $arg = reset( $args ); $arg !== false; $arg = next( $args ) ) {
-    if ($arg == '--logtofile') {
-        $dfgLogToFile = next($args);
-        continue;
-    } else if ($arg == '--outputformat') {
-        $dfgOutputFormat = next($args);
-        continue;
-    } 
+	if ($arg == '--logtofile') {
+		$dfgLogToFile = next($args);
+		continue;
+	} else if ($arg == '--outputformat') {
+		$dfgOutputFormat = next($args);
+		continue;
+	}
 }
 
 dffInitLanguage();
@@ -81,11 +81,11 @@ $dfgOut = DFPrintoutStream::getInstance(DF_OUTPUT_FORMAT_TEXT);
 $dfgOut->start(DF_OUTPUT_TARGET_STDOUT);
 
 if ($dfgLogToFile !== false) {
-    $dfgOut->start(DF_OUTPUT_TARGET_FILE, $dfgLogToFile);
+	$dfgOut->start(DF_OUTPUT_TARGET_FILE, $dfgLogToFile);
 }
 
 if ($dfgOutputFormat != "text") {
-    $dfgOut->setMode($dfgOutputFormat);
+	$dfgOut->setMode($dfgOutputFormat);
 }
 
 // check PHP version
@@ -140,7 +140,7 @@ $dfgCheckInst=false;
 $dfgInstallPackages=false;
 $dfgRestoreList=false;
 $dfgCreateRestorePoint=false;
-
+$dfgRemoveRestorePoint=false;
 $dfgListpages="no";
 $dfgRemoveReferenced=false;
 $dfgRemoveStillUsed=false;
@@ -258,16 +258,20 @@ for( $arg = reset( $args ); $arg !== false; $arg = next( $args ) ) {
 		$dfgCreateRestorePoint = true;
 		$dfgRestorePoint = next($args);
 		continue;
+	} else if ($arg == '--rremove') {
+		$dfgRemoveRestorePoint = true;
+		$dfgRestorePoint = next($args);
+		continue;
 	} else if ($arg == '--noask') {
 		$dfgNoAsk = true;
 		continue;
 	} else if ($arg == '--logtofile') {
-        $dfgLogToFile = next($args);
-        continue;
-    } else if ($arg == '--outputformat') {
-        $dfgOutputFormat = next($args);
-        continue;
-    } else if ($arg == '--listpages') {
+		$dfgLogToFile = next($args);
+		continue;
+	} else if ($arg == '--outputformat') {
+		$dfgOutputFormat = next($args);
+		continue;
+	} else if ($arg == '--listpages') {
 		$dfgListpages = next($args);
 		continue;
 	} else if ($arg == '--removereferenced') {
@@ -386,6 +390,23 @@ if ($dfgCreateRestorePoint) {
 	$logger->info("Restore point created");
 	$dfgOut->outputln('__OK__');
 	die(DF_TERMINATION_WITHOUT_FINALIZE);
+}
+
+if($dfgRemoveRestorePoint) {
+	if (empty($dfgRestorePoint)) {
+		dffExitOnFatalError("Name of restore point missing.");
+	}
+	try {
+		$success = $rollback->removeRestorePoint($dfgRestorePoint);
+		if ($success) {
+			$dfgOut->outputln('__OK__');
+			die(DF_TERMINATION_WITHOUT_FINALIZE);
+		} else {
+			dffExitOnFatalError("Removing of restore point '$dfgRestorePoint' failed.");
+		}
+	} catch(InstallationError $e) {
+		dffExitOnFatalError($e->getMsg());
+	}
 }
 
 if ($dfgRestoreList) {

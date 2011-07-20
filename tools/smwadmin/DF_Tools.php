@@ -42,7 +42,7 @@ class Tools {
 		}
 
 		ob_start();
-		phpinfo();
+		@phpinfo();
 		$info = ob_get_contents();
 		ob_end_clean();
 		//Get Systemstring
@@ -94,6 +94,28 @@ class Tools {
 			closedir($dir);
 			@rmdir($current_dir); // do not warn cause it may contain excluded files and dirs.
 		}
+	}
+	
+	/**
+	 * Removes a directory using native OS commands.
+	 * 
+	 * @param string $dir
+	 */
+	public static function remove_dir_native($dir) {
+		if (Tools::isWindows()) {
+			$dir = self::makeWindowsPath($dir);
+			exec("rmdir $dir /S /Q", $out, $ret);
+			if ($ret != 0) return false;
+		} else {
+			$dir = self::makeUnixPath($dir);
+            if (substr(trim($dir), -1) != '/') $dir = trim($dir)."/";
+            exec("rm -rf $dir*", $out, $ret);
+            if ($ret != 0) return false;
+            exec("rmdir $dir", $out, $ret);
+            if ($ret != 0) return false;
+            
+		}
+		return true;
 	}
 
 
@@ -199,6 +221,10 @@ class Tools {
 	public static function makeUnixPath($path) {
 		return str_replace("\\", "/", $path);
 	}
+	
+    public static function makeWindowsPath($path) {
+        return str_replace("/", "\\", $path);
+    }
 
 	/**
 	 * Normalizes a path, ie. uses unix file separators (/) and removes a trailing slash.
@@ -233,12 +259,12 @@ class Tools {
 			$found_unzip = false;
 			exec("unzip > $nullDevice", $out, $ret);
 			$found_unzip = ($ret == 0);
-			if (!$found_unzip) return("Cannot find GNU unzip. Please install and include path to unzip.exe into PATH-variable.");
+			if (!$found_unzip) return("Cannot find GNU unzip. Please install and include path to unzip into PATH-variable.");
 
 			// check for GNU-patch tool
 			exec("patch -version > $nullDevice", $out, $ret);
 			$found_patch = ($ret == 0);
-			if (!$found_patch) return("Cannot find GNU patch. Please install and include path to patch.exe into PATH-variable.");
+			if (!$found_patch) return("Cannot find GNU patch. Please install and include path to patch into PATH-variable.");
 		}
 		// check if PHP is in path
 		$phpExe = 'php';
@@ -247,7 +273,7 @@ class Tools {
 		}
 		exec("\"$phpExe\" -version > $nullDevice", $out, $ret);
 		$phpInPath = ($ret == 0);
-		if (!$phpInPath) return("Cannot find php.exe. Please include path to php.exe into PATH-variable.");
+		if (!$phpInPath) return("Cannot find php. Please include path to php executable into PATH-variable.");
 
 		// check for mysql, mysqldump
 		$mysqlExe = 'mysql';
@@ -256,7 +282,7 @@ class Tools {
 		}
 		exec("\"$mysqlExe\" --version > $nullDevice", $out, $ret);
 		$mysql_binaries = ($ret == 0);
-		if (!$mysql_binaries) return("Cannot find mysql.exe. Please include path to mysql.exe into PATH-variable.");
+		if (!$mysql_binaries) return("Cannot find mysql. Please include path to mysql executable into PATH-variable.");
 
 		// check if socket functions are available
 		if (!function_exists("socket_create")) {
