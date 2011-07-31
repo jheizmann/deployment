@@ -66,7 +66,7 @@ function dffInitLanguage() {
 	global $dfgLang, $mwrootDir, $wgLanguageCode;
 	if (isset($wgLanguageCode)) {
 		// if wiki language code available use it
-		$langCode = $wgLanguageCode;
+		$langCode = ucfirst($wgLanguageCode);
 	} else {
 		// otherwise as configured in settings.php
 		$langCode = isset(DF_Config::$df_lang) ? ucfirst(DF_Config::$df_lang) : "En";
