@@ -208,7 +208,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -i $extid";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -i $extid";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -230,7 +230,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -d $extid";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -d $extid";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -252,9 +252,8 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u $extid";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u $extid";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
-
 		} else {
 			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u $extid";
 			$nullResult = `$runCommand &`;
@@ -274,7 +273,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --finalize";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --finalize";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -317,7 +316,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -339,7 +338,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -r $restorepoint";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -r $restorepoint";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -361,7 +360,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rremove $restorepoint";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rremove $restorepoint";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -383,7 +382,7 @@ class DFCommandInterface {
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd /C START \"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rcreate $restorepoint";
+			$runCommand = "cmd /C START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rcreate $restorepoint";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
@@ -442,4 +441,15 @@ class DFCommandInterface {
 		return;
 
 	}
+	
+	/**
+	 * Special quoting for cmd /c START ....
+	 * Quotes only if necessary and then like this:  d:\"my folder"
+	 * 
+	 * @param string $path
+	 */
+	private function quotePathForWindowsCMD($path) {
+		if (strpos($path, " ") === false) return $path;
+		return substr($path, 0, 3).'"'.substr($path, 3).'"';
+	} 
 }
