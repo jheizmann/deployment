@@ -37,11 +37,13 @@
 			<exclude file="deployment/tools/repositories" />
 			<exclude file="deployment/settings.php" />
 			<exclude file="deployment/tools/unzip.exe" />
+			<exclude file="deployment/tools/smwadmin.sh" />
 		</update>
 
 		<update from="131">
 			<exclude file="deployment/tools/repositories" />
 			<exclude file="deployment/tools/unzip.exe" />
+			<exclude file="deployment/tools/smwadmin.sh" />
 		</update>
 		
 		<update from="130">
