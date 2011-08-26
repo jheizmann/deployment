@@ -168,7 +168,9 @@ for( $arg = reset( $args ); $arg !== false; $arg = next( $args ) ) {
 		if ($package === false) dffExitOnFatalError("No package found");
 
 		if (file_exists($package)) {
-			$file_ext = reset(array_reverse(explode(".", $package)));
+			$help1 = explode(".", $package);
+			$help2 = array_reverse($help1);
+			$file_ext = reset($help2);
 			if (Tools::checkIfOntologyFile($package)) {
 				// import ontology
 				$ontologiesToInstall[] = $package;
