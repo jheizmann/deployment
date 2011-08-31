@@ -310,7 +310,8 @@ class DeployDescriptor {
 	// global properties
 	// GETTER
 	function getVersion() {
-		return trim((string) $this->globalElement[0]->version);
+		$version = trim((string) $this->globalElement[0]->version);
+		return str_replace(".", "", $version);
 	}
 
 	/**
@@ -411,8 +412,8 @@ class DeployDescriptor {
 
 		foreach($dependencies as $dep) {
 			$depID = strtolower(trim((string) $dep[0]));
-			$depFrom = intval((string) $dep->attributes()->from);
-			$depTo = intval((string) $dep->attributes()->to);
+			$depFrom = intval(str_replace(".","",(string) $dep->attributes()->from));
+			$depTo = intval(str_replace(".","",(string) $dep->attributes()->to));
 			$optional = (string) $dep->attributes()->optional;
 			$optional = $optional == "true";
 			$message = (string) $dep->attributes()->message;
