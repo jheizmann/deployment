@@ -360,6 +360,7 @@ class Installer {
 		$dfgOut->outputln (" Installed           | Bundle               | Av. versions  | Repository");
 		$dfgOut->outputln ("-------------------------------------------------------------------------\n");
 
+		ksort($allPackages);
 		foreach($allPackages as $p_id => $versions) {
 
 
