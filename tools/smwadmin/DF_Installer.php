@@ -980,7 +980,7 @@ class Installer {
 				$updateFound = false;
 				foreach($versions as $v) {
 					$ptoUpdate = PackageRepository::getDeployDescriptor($p->getID(), $v);
-					list($id_ptu, $from_ptu, $to_ptu) = $ptoUpdate->getDependency($p->getID());
+					list($id_ptu, $from_ptu, $to_ptu) = $ptoUpdate->getDependency($dd->getID());
 					if ($from_ptu <= $dd->getVersion() && $to_ptu >= $dd->getVersion()) {
 
 						$packagesToUpdate[] = array($p, $from_ptu, $to_ptu);
@@ -990,7 +990,7 @@ class Installer {
 				}
 				if (!$updateFound) throw new InstallationError(DEPLOY_FRAMEWORK_COULD_NOT_FIND_UPDATE, "Could not find update for: ".$p->getID());
 
-				$this->collectSuperExtensions($p, $packagesToUpdate, $localPackages);
+				$this->collectSuperExtensions($ptoUpdate, $packagesToUpdate, $localPackages);
 			}
 		}
 
