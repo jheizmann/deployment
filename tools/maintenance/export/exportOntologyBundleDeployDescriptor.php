@@ -141,6 +141,7 @@ function dumpDescriptor($bundeID, $output = "deploy.xml", $dumpFile = "dump.xml"
 
 
 	$versionText = count($version) > 0 ? Tools::getXSDValue(reset($version)) : "100";
+	if (strlen($versionText) == 2) $versionText = "0$versionText";
 	$vendorText = count($vendor) > 0 ? Tools::getXSDValue(reset($vendor)) : "no vendor";
 	$instdirText = count($instdir) > 0 ? Tools::getXSDValue(reset($instdir)) : "extensions/$bundeID";
 	$rationaleText = count($rationale) > 0 ? Tools::getXSDValue(reset($rationale)) : "no description";
