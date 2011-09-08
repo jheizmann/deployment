@@ -249,6 +249,7 @@ function extractDeployDescriptors($bundlePath, $fileNamecontains = false) {
 					if (strpos($file, $fileNamecontains) === false) continue;
 				}
 				$__file=$bundlePath."/".$file;
+				print "\nUnzip deploy descriptor for $__file";
 				$dd = Tools::unzipDeployDescriptor($__file, $tmpFolder);
 				if (is_null($dd)) {
 					print "\nWARNING: $__file does not contain a deploy descriptor. It is skipped.";
@@ -259,6 +260,7 @@ function extractDeployDescriptors($bundlePath, $fileNamecontains = false) {
 		}
 		return $result;
 	} else {
+		print "\nUnzip deploy descriptor for $bundlePath";
 		$dd = Tools::unzipDeployDescriptor($bundlePath, $tmpFolder);
 		return array(array($dd, $bundlePath));
 	}
