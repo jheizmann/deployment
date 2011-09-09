@@ -132,6 +132,13 @@ class OntologyInstaller {
 				$dfgOut->output("done.]");
 			}
 		}
+		
+		// update prefixes (comes from onto2mwxml)
+		$dfgOut->outputln("[Update prefixes...");
+
+		DFBundleTools::storeRegisteredPrefixes($outputFromOnto2mwxml->ns_mappings);
+		unlink($settingsFile);
+		$dfgOut->output("done.]");
 
 		// do actual ontology install/update
 		$dfgOut->outputln("[Installing/updating ontology $inputfile...");
@@ -145,12 +152,6 @@ class OntologyInstaller {
 			$dfgOut->output("done.]");
 		}
 
-		// update prefixes (comes from onto2mwxml)
-		$dfgOut->outputln("[Update prefixes...");
-
-		DFBundleTools::storeRegisteredPrefixes($outputFromOnto2mwxml->ns_mappings);
-		unlink($settingsFile);
-		$dfgOut->output("done.]");
 
 		return $bundleID;
 	}
@@ -444,11 +445,12 @@ ENDS
 
 		chdir($onto2mwxml_dir);
 		$ret = 0;
+		$langCode = dffGetLanguageCode();
 		if (Tools::isWindows()) {
 				
 			if ($noBundlePage) $noBundlePageParam = "--nobundlepage"; else $noBundlePageParam = "";
 			if (!empty($bundleID)) $bundleID ='--bundleid \"$bundleID\"';
-			exec("\"$onto2mwxml_dir/onto2mwxml.bat\" -i \"$inputfile\" -o \"$outputfile\" $bundleID $noBundlePageParam --outputformat $dfgOutputFormat", $output, $ret);
+			exec("\"$onto2mwxml_dir/onto2mwxml.bat\" -i \"$inputfile\" -o \"$outputfile\" $bundleID $noBundlePageParam --outputformat $dfgOutputFormat --lang $langCode", $output, $ret);
 			if ($ret != 0) {
 				foreach($output as $l) $dfgOut->outputln("$l");
 				throw new Exception("Onto2MWXML exited abnormally.");
@@ -458,7 +460,7 @@ ENDS
 				
 			if ($noBundlePage) $noBundlePageParam = "--nobundlepage"; else $noBundlePageParam = "";
 			if (!empty($bundleID)) $bundleID ='--bundleid \"$bundleID\"';
-			exec("\"$onto2mwxml_dir/onto2mwxml.sh\" -i \"$inputfile\" -o \"$outputfile\" $bundleID $noBundlePageParam --outputformat $dfgOutputFormat", $output, $ret);
+			exec("\"$onto2mwxml_dir/onto2mwxml.sh\" -i \"$inputfile\" -o \"$outputfile\" $bundleID $noBundlePageParam --outputformat $dfgOutputFormat --lang $langCode", $output, $ret);
 			if ($ret != 0) {
 				foreach($output as $l) $dfgOut->outputln("$l");
 				throw new Exception("Onto2MWXML exited abnormally.");

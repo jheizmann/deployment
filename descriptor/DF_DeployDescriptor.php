@@ -178,6 +178,12 @@ class DeployDescriptor {
 				if (count($update) === 0) {
 					// if not appropriate patchlevel update exists, try without patchlevel constraint
 					$path = "//update[@from='$from']";
+					$update = $this->dom->xpath($path);
+					if (count($update) === 0 && $from == $this->getVersion()) {
+						// if no explicit update section exists, check if updating the 
+						// currently installed version only to another patchlevel
+						$path = "//update[@from='patchlevel']";
+					}
 				}
 			}
 
@@ -304,7 +310,8 @@ class DeployDescriptor {
 	// global properties
 	// GETTER
 	function getVersion() {
-		return trim((string) $this->globalElement[0]->version);
+		$version = trim((string) $this->globalElement[0]->version);
+		return str_replace(".", "", $version);
 	}
 
 	/**
@@ -405,8 +412,8 @@ class DeployDescriptor {
 
 		foreach($dependencies as $dep) {
 			$depID = strtolower(trim((string) $dep[0]));
-			$depFrom = intval((string) $dep->attributes()->from);
-			$depTo = intval((string) $dep->attributes()->to);
+			$depFrom = intval(str_replace(".","",(string) $dep->attributes()->from));
+			$depTo = intval(str_replace(".","",(string) $dep->attributes()->to));
 			$optional = (string) $dep->attributes()->optional;
 			$optional = $optional == "true";
 			$message = (string) $dep->attributes()->message;

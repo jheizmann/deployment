@@ -247,6 +247,7 @@ $html .= "<body><img src=\"skins/logo.png\" style=\"float:left; margin-right: 30
          "<div id=\"df_header\">$heading $wikiName</div>";
 
 $restoreWarning = $dfgLang->getLanguageString('df_restore_warning');
+$restoreRemoveWarning = $dfgLang->getLanguageString('df_remove_restore_warning');
 $deinstallWarning = $dfgLang->getLanguageString('df_uninstall_warning');
 $globalUpdateWarning = $dfgLang->getLanguageString('df_globalupdate_warning');
 
@@ -287,6 +288,9 @@ $html .= <<<ENDS
 </div>
 <div id="restore-dialog-confirm" title="$restoreHeading" style="display:none">
     <p><span style="float:left; margin:0 7px 20px 0;"></span><span id="restore-dialog-confirm-text">$restoreWarning</span></p>
+</div>
+<div id="remove-restore-dialog-confirm" title="$restoreHeading" style="display:none">
+    <p><span style="float:left; margin:0 7px 20px 0;"></span><span id="restore-dialog-confirm-text">$restoreRemoveWarning</span></p>
 </div>
 <div id="check-extension-dialog" title="$checkExtensionHeading" style="display:none">
     <p><span style="float:left; margin:0 7px 20px 0;"></span><span id="check-extension-dialog-text"></span></p>

@@ -1,7 +1,7 @@
 * 
 * Deploy Descriptors
 *
-* @author: Kai Kühn / ontoprise / 2009-2011
+* @author: Kai Kï¿½hn / ontoprise / 2009-2011
 *
 
 Contents:
@@ -108,13 +108,16 @@ For a formal description in XML-Schema, see dd.xsd
     Specifies the necessary configuration changes. It is divided in three sections:
     
         - new: Executed if a package is installed completely new
-        - update: If a package is updated (from the given version)
+        - update: If a package is updated 
+			(1) from a given version							<update from="131">...</update>
+			(2) from a patchlevel of the same version			<update from="patchlevel">...</update>
+			(3) default update (if no other matches)			<update>...</update>
         - uninstall: Executed if the package is de-installed.
     
     <configs>
         <new>
         </new>
-        <update from="...">
+        <update [from="..."]>
         </update>
         <uninstall>
         </uninstall>

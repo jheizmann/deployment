@@ -26,6 +26,7 @@
  *                  --url <repository-url>      The download base URL
  *                  [--latest]                  Latest version?
  *                  [--mediawiki]               Include Mediawiki?
+ *                  [--mwversion]               Mediawiki version (if missing it is read from the underlying installation)
  *                  [--contains <substring> ]   File name contains a substring
  *
  * @author: Kai Kühn / ontoprise / 2011
@@ -73,6 +74,11 @@ for( $arg = reset( $argv ); $arg !== false; $arg = next( $argv ) ) {
 		$mediawiki = true;
 		continue;
 	}
+	
+    if ($arg == '--mwversion') {
+        $mwversion =next($argv);
+        continue;
+    }
 
 	if ($arg == '--contains') {
 		$fileNamecontains = next($argv);
@@ -80,7 +86,8 @@ for( $arg = reset( $argv ); $arg !== false; $arg = next( $argv ) ) {
 	}
 }
 
-if (!isset($repositoryDir) || !isset($bundlePath) || !isset($repositoryURL)) {
+
+if (!isset($repositoryDir) || (!(isset($bundlePath) || isset($mediawiki))) || !isset($repositoryURL)) {
 	echo "\nUsage: php addBundle2Repository.php -r <repository-dir> -b <bundle file or dir> --url <repository-url>\n";
 	die(1);
 }
@@ -97,9 +104,12 @@ if (Tools::isWindows($os) && $latest) {
 Tools::mkpath($repositoryDir."/bin");
 
 // read bundles and extract the deploy descriptors
+$descriptors = array();
+if (isset($bundlePath)) { 
 echo "\nExtract deploy descriptors";
 $descriptors = extractDeployDescriptors($bundlePath, $fileNamecontains);
 echo "..done.";
+}
 
 // load existing repository
 echo "\nLoading repository...";
@@ -151,36 +161,8 @@ foreach($descriptors as $tuple) {
 }
 
 if ($mediawiki) {
-	$version = Tools::getMediawikiVersion(realpath($rootDir."/../"));
-	$version = str_replace(".", "", $version);
-	$xml = <<<ENDS
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<deploydescriptor>
-    <global>
-        <version>$version</version>
-        <id>mw</id>
-        <instdir></instdir>
-        <vendor>Mediawiki</vendor>
-        <description>Mediawiki</description>
-
-        <dependencies>
-    </dependencies>
-    </global>
-    <wikidumps>
-    
-    </wikidumps>
-    <resources>
-    
-    </resources>
-    <configs>
-     <update>
-       <script file="maintenance/update.php" />
-     </update>
-    </configs>
-</deploydescriptor>
+	$xml = Tools::createMWDeployDescriptor(realpath($rootDir."/../"), isset($mwversion) ? $mwversion : NULL);
 	
-
-ENDS;
 	$id = 'mw';
 	Tools::mkpath($repositoryDir."/extensions/$id");
 	$handle = fopen($repositoryDir."/extensions/$id/deploy-$version.xml", "w");
@@ -267,6 +249,7 @@ function extractDeployDescriptors($bundlePath, $fileNamecontains = false) {
 					if (strpos($file, $fileNamecontains) === false) continue;
 				}
 				$__file=$bundlePath."/".$file;
+				print "\nUnzip deploy descriptor for $__file";
 				$dd = Tools::unzipDeployDescriptor($__file, $tmpFolder);
 				if (is_null($dd)) {
 					print "\nWARNING: $__file does not contain a deploy descriptor. It is skipped.";
@@ -277,6 +260,7 @@ function extractDeployDescriptors($bundlePath, $fileNamecontains = false) {
 		}
 		return $result;
 	} else {
+		print "\nUnzip deploy descriptor for $bundlePath";
 		$dd = Tools::unzipDeployDescriptor($bundlePath, $tmpFolder);
 		return array(array($dd, $bundlePath));
 	}

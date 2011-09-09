@@ -185,10 +185,10 @@ function dffCheckEnvironment() {
 
 	// check if external processes can be run
 	$phpExe = 'php';
-	if (array_key_exists('df_php_executable', DF_Config::$settings)) {
+	if (array_key_exists('df_php_executable', DF_Config::$settings) && !empty(DF_Config::$settings['df_php_executable'])) {
 		$phpExe = DF_Config::$settings['df_php_executable'];
 	}
-	@exec("$phpExe --version", $out, $ret);
+	@exec("\"$phpExe\" --version", $out, $ret);
 	if ($ret != 0 || stripos($out[0], "PHP") === false) {
 		$result .= "<li>Could not run external processes: <pre>".implode("\n",$out)."</pre></li>";
 	} else if ($ret == 0 && preg_match("/5\\.\\d+\\.\\d+/", $out[0]) === 0) {
@@ -208,18 +208,6 @@ function dffCheckEnvironment() {
 	$repositoryFileWritable = is_writable("$mwrootDir/deployment/tools/repositories");
 	if ($repositoryFileWritable === false) {
 		$result .= "<li>Could not open deployment/tools/repositories for writing.</li>";
-	}
-
-	// check if OP software directory exists and is writable (for external applications like TSC for instance)
-	if (!array_key_exists('df_no_external_apps', DF_Config::$settings) || DF_Config::$settings['df_no_external_apps'] === false) {
-		$opSoftwareDir = Tools::getProgramDir()."/Ontoprise";
-		if (!file_exists($opSoftwareDir)) {
-			$result .= "<li>Please create directory and make writable: ".$opSoftwareDir."</li>";
-		} else {
-			if (!is_writable($opSoftwareDir)) {
-				$result .= "<li>Please make writable: ".$opSoftwareDir."</li>";
-			}
-		}
 	}
 
 	// check homedir/tempdir

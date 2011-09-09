@@ -32,6 +32,7 @@ define('DEPLOY_FRAMEWORK_ONTOLOGYCONVERSION_FAILED', 13);
 define('DEPLOY_FRAMEWORK_WRONG_VERSION', 14);
 define('DEPLOY_FRAMEWORK_UNCOMPRESS_ERROR', 15);
 define('DEPLOY_FRAMEWORK_ONTOLOGYCONFLICT_ERROR', 16);
+define('DEPLOY_FRAMEWORK_INVALID_RESTOREPOINT', 17);
 
 
 require_once 'DF_PackageRepository.php';
@@ -56,9 +57,9 @@ class Installer {
 
 	static $instance = NULL; // singleton
 
-	public static function getInstance($rootDir = NULL, $force = false, $noRollback = false) {
+	public static function getInstance($rootDir = NULL, $force = false) {
 		if (!is_null(self::$instance)) return self::$instance;
-		self::$instance = new Installer($rootDir, $force, $noRollback);
+		self::$instance = new Installer($rootDir, $force);
 		return self::$instance;
 	}
 	/*
@@ -90,7 +91,7 @@ class Installer {
 	 *
 	 * @param string $rootDir Explicit root dir. Only necessary for testing
 	 */
-	private function __construct($rootDir = NULL, $force = false, $noRollback = false) {
+	private function __construct($rootDir = NULL, $force = false) {
 		// create temp folder
 		$this->errors = array();
 		$wikiname = DF_Config::$df_wikiName;
@@ -109,8 +110,7 @@ class Installer {
 		$this->rollback = Rollback::getInstance($this->rootDir);
 
 		$this->force = $force;
-
-		$this->noRollback = $noRollback;
+		
 		$this->logger = Logger::getInstance();
 	}
 
@@ -314,18 +314,19 @@ class Installer {
 
 			try {
 				$dd = PackageRepository::getLatestDeployDescriptor($tl_ext->getID());
+	
+				if ($dd->getVersion() > $localPackages[$dd->getID()]->getVersion()
+				|| ($dd->getVersion() == $localPackages[$dd->getID()]->getVersion() && $dd->getPatchlevel() > $localPackages[$dd->getID()]->getPatchlevel())) {
+					$this->collectDependingExtensions($dd, $updatesNeeded, $localPackages, true);
+					$updatesNeeded[] = array($dd, $dd->getVersion(), $dd->getVersion());
+				}
+				
 			}  catch(RepositoryError $e) {
 				if ($e->getErrorCode() == DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST) {
 					// local bundle (e.g. ontology). ignore it.
 				}
 			}
 
-
-			if ($dd->getVersion() > $localPackages[$dd->getID()]->getVersion()
-			|| ($dd->getVersion() == $localPackages[$dd->getID()]->getVersion() && $dd->getPatchlevel() > $localPackages[$dd->getID()]->getPatchlevel())) {
-				$this->collectDependingExtensions($dd, $updatesNeeded, $localPackages, true);
-				$updatesNeeded[] = array($dd, $dd->getVersion(), $dd->getVersion());
-			}
 
 		}
 
@@ -359,6 +360,7 @@ class Installer {
 		$dfgOut->outputln (" Installed           | Bundle               | Av. versions  | Repository");
 		$dfgOut->outputln ("-------------------------------------------------------------------------\n");
 
+		ksort($allPackages);
 		foreach($allPackages as $p_id => $versions) {
 
 
@@ -496,6 +498,29 @@ class Installer {
 		$d = new HttpDownload();
 		$localPackages = PackageRepository::getLocalPackages($this->rootDir);
 		$num = 0;
+
+		// check if any external apps are about to be installed
+		// in this case check if the location is writable. This is not checked by default.
+		$errorOccured = false;
+		foreach($extensions_to_update as $arr) {
+			list($desc, $min, $max) = $arr;
+			if ($desc->isNonPublic()) {
+				// check if OP software directory exists and is writable (for external applications like TSC for instance)
+				$opSoftwareDir = Tools::getProgramDir()."/Ontoprise";
+				if (!file_exists($opSoftwareDir)) {
+					$result = "Please create directory and make writable: ".$opSoftwareDir;
+					$errorOccured=true;
+				} else {
+					if (!is_writable($opSoftwareDir)) {
+						$result = "Please make writable: ".$opSoftwareDir;
+						$errorOccured=true;
+					}
+				}
+
+				if ($errorOccured) dffExitOnFatalError($result);
+			}
+		}
+
 		foreach($extensions_to_update as $arr) {
 			list($desc, $min, $max) = $arr;
 			$id = $desc->getID();
@@ -507,7 +532,9 @@ class Installer {
 			if (!is_null($fromVersion)) {
 				$desc->createConfigElements($fromVersion, $fromPatchlevel);
 			}
-			if (!$this->noRollback) {
+			
+			global $dfgNoAsk;
+            if (!$dfgNoAsk) {
 				$success = $this->rollback->saveInstallation();
 				if (!$success) {
 					throw new InstallationError(DEPLOY_FRAMEWORK_CREATING_RESTOREPOINT_FAILED, "Could not copy the installation");
@@ -733,11 +760,12 @@ class Installer {
 		}
 		$dfgOut->outputln("unzip into $unzipDirectory");
 		$dfgOut->outputln("[unzip ".$id."-$version.zip...");
-		if (Tools::isWindows()) {
-			exec('unzip -o "'.$this->tmpFolder."\\".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
-		} else {
-			exec('unzip -o "'.$this->tmpFolder."/".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
-		}
+	    if (Tools::isWindows()) {
+            global $rootDir;
+            exec('"'.$rootDir.'/tools/unzip.exe" -o "'.$this->tmpFolder."\\".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
+        } else {
+            exec('unzip -o "'.$this->tmpFolder."/".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
+        }
 		$dfgOut->output("done.]");
 	}
 
@@ -767,7 +795,12 @@ class Installer {
 		}
 
 		$dfgOut->outputln("[unzip ".$filePath."...");
-		exec('unzip -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
+	    if (Tools::isWindows()) {
+            global $rootDir;
+            exec('"'.$rootDir.'/tools/unzip.exe" -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
+        } else {
+            exec('unzip -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
+        }
 		$dfgOut->output("done.]");
 
 	}
@@ -936,8 +969,9 @@ class Installer {
 			// check if a local extension has $dd as a dependency
 			$dep = $p->getDependency($dd->getID());
 			if ($dep == NULL) continue;
-			list($id, $from, $to) = $dep;
-
+			list($id, $from, $to, $optional) = $dep;
+            if ($optional) continue;
+            
 			// if $dd's version exceeds the limit of the installed,
 			// try to find an update
 			if ($dd->getVersion() > $to) {
@@ -946,7 +980,7 @@ class Installer {
 				$updateFound = false;
 				foreach($versions as $v) {
 					$ptoUpdate = PackageRepository::getDeployDescriptor($p->getID(), $v);
-					list($id_ptu, $from_ptu, $to_ptu) = $ptoUpdate->getDependency($p->getID());
+					list($id_ptu, $from_ptu, $to_ptu) = $ptoUpdate->getDependency($dd->getID());
 					if ($from_ptu <= $dd->getVersion() && $to_ptu >= $dd->getVersion()) {
 
 						$packagesToUpdate[] = array($p, $from_ptu, $to_ptu);
@@ -956,7 +990,7 @@ class Installer {
 				}
 				if (!$updateFound) throw new InstallationError(DEPLOY_FRAMEWORK_COULD_NOT_FIND_UPDATE, "Could not find update for: ".$p->getID());
 
-				$this->collectSuperExtensions($p, $packagesToUpdate, $localPackages);
+				$this->collectSuperExtensions($ptoUpdate, $packagesToUpdate, $localPackages);
 			}
 		}
 
@@ -1010,17 +1044,17 @@ class Installer {
 
 			try {
 				$dd = PackageRepository::getLatestDeployDescriptor($tl_ext->getID());
+				if ($dd->getVersion() > $localPackages[$dd->getID()]->getVersion()
+				|| ($dd->getVersion() == $localPackages[$dd->getID()]->getVersion() && $dd->getPatchlevel() > $localPackages[$dd->getID()]->getPatchlevel())) {
+					$this->collectDependingExtensions($dd, $updatesNeeded, $localPackages, true);
+					$updatesNeeded[] = array($dd, $dd->getVersion(), $dd->getVersion());
+				}
 			} catch(RepositoryError $e) {
 				if ($e->getErrorCode() == DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST) {
 					// local bundle (e.g. ontology). ignore it.
 				}
 			}
 
-			if ($dd->getVersion() > $localPackages[$dd->getID()]->getVersion()
-			|| ($dd->getVersion() == $localPackages[$dd->getID()]->getVersion() && $dd->getPatchlevel() > $localPackages[$dd->getID()]->getPatchlevel())) {
-				$this->collectDependingExtensions($dd, $updatesNeeded, $localPackages, true);
-				$updatesNeeded[] = array($dd, $dd->getVersion(), $dd->getVersion());
-			}
 
 		}
 

@@ -82,7 +82,7 @@ $localPackages = isset($emptyRepo) && $emptyRepo == true ? array() : PackageRepo
 echo "\nCreate new repository ".$outputDir."repository.xml";
 
 
-$new_ser = '<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="repository.xsl"?>'."<root>\n<extensions>\n";
+$new_ser = '<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="repository.xsl"?>'."<root version=\"".DEPLOY_FRAMEWORK_REPOSITORY_VERSION."\">\n<extensions>\n";
 foreach($localPackages as $lp) {
 	$id = $lp->getID();
 	if ($id == 'mw') continue; // special handling for mw

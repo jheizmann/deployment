@@ -95,7 +95,11 @@ class ResourceInstaller {
 		global $rootDir;
 		$this->logger->info("Refreshing ontology: $file");
 		$id = $dd->getID();
-		system("php \"$rootDir/tools/maintenance/refreshPages.php\" -d \"$dumpPath\" -b $id");
+		$phpExe = 'php';
+		if (array_key_exists('df_php_executable', DF_Config::$settings)  && !empty(DF_Config::$settings['df_php_executable'])) {
+			$phpExe = DF_Config::$settings['df_php_executable'];
+		}
+		system("\"$phpExe\" \"$rootDir/tools/maintenance/refreshPages.php\" -d \"$dumpPath\" -b $id");
 		$dfgOut->outputln("done.]");
 
 
@@ -125,12 +129,12 @@ class ResourceInstaller {
 	public function deleteResources($dd) {
 		global $wgUser, $dfgOut;
 		if (count($dd->getResources()) ==  0) return;
-		
+
 		global $dfgRemoveReferenced, $dfgIncludeImages,  $dfgRemoveStillUsed;
 		if ($dfgRemoveReferenced || $dfgIncludeImages) {
 			DFBundleTools::deleteReferencedImagesOfBundle($dd->getID(), $this->logger, !$dfgRemoveStillUsed);
 		}
-		
+
 		$resources = $dd->getResources();
 		foreach($resources as $file) {
 			$title = Title::newFromText(basename($file), NS_IMAGE);

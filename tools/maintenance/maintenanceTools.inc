@@ -492,7 +492,7 @@ class ConsistencyChecker {
 							}
 							break;
 						case 'Semantic Result Formats':
-							if (strpos($ls, '/*start-semanticresultsformats*/') === false) {
+							if (strpos($ls, '/*start-semanticresultformats*/') === false) {
 								$this->statusLog[] = $dfgOut->getln(array("\n","\t","[FAILED]","Semantic Result Formats Extension is already installed but not visible to DF."));
 								$errorFound=true;
 							}
@@ -534,7 +534,7 @@ class ConsistencyChecker {
 							}
 							break;
 						case 'Enhanced Retrieval extension':
-							if (strpos($ls, '/*start-unifiedsearch*/') === false) {
+							if (strpos($ls, '/*start-enhancedretrieval*/') === false) {
 								$this->statusLog[] = $dfgOut->getln(array("\n","\t","[FAILED]","UnifiedSearch Extension is already installed but not visible to DF."));
 								$errorFound=true;
 							}
@@ -611,6 +611,7 @@ class ConsistencyChecker {
 
 				if (array_key_exists('name', $ext)) {
 					$name = $ext['name'];
+					if (!array_key_exists('version', $ext)) continue;
 					list($version) = explode(" ", $ext['version']);
 					$version = str_replace(".","", $version);
 					$version = reset(explode("_", $version));

@@ -16,8 +16,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+define('DEPLOY_FRAMEWORK_REPOSITORY_VERSION', 1);
+
 define('DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST', 1);
 define('DEPLOY_FRAMEWORK_REPO_INVALID_DESCRIPTOR', 2);
+define('DEPLOY_FRAMEWORK_REPO_INCOMPATIBLE_VERSION', 2);
 
 global $rootDir;
 require_once $rootDir.'/io/DF_HttpDownload.php';
@@ -149,11 +152,25 @@ class PackageRepository {
 			try {
 				$res = $d->downloadAsString($path, $port, $host, array_key_exists($url, self::$repo_credentials) ? self::$repo_credentials[$url] : "", NULL);
 				self::$repo_dom[$url] = simplexml_load_string($res);
+				$repo_version = self::$repo_dom[$url]->xpath("/root[@version]");
+				if (count($repo_version) > 0) {
+					$repo_version_value = (string) $repo_version[0]->attributes()->version;
+				} else {
+					$repo_version_value = 1; // must be version 1 in this case
+				}
+				if ($repo_version_value != DEPLOY_FRAMEWORK_REPOSITORY_VERSION) {
+					throw new RepositoryError(DEPLOY_FRAMEWORK_REPO_INCOMPATIBLE_VERSION, "Try to access an incompatible repository at [$url]. Expected version was ".DEPLOY_FRAMEWORK_REPOSITORY_VERSION." but actually it was $repo_version_value. Please update DF manually.");
+				}
 			} catch(HttpError $e) {
 				$dfgOut->outputln($e->getMsg(), DF_PRINTSTREAM_TYPE_ERROR);
 				$dfgOut->outputln();
 					
-			} catch(Exception $e) {
+			} catch(RepositoryError $e) {
+				if ($e->getErrorCode() == DEPLOY_FRAMEWORK_REPO_INCOMPATIBLE_VERSION) {
+					// exit if repository is incompatible
+					dffExitOnFatalError($e);
+				}
+			}catch(Exception $e) {
 				$dfgOut->outputln($e->getMessage(), DF_PRINTSTREAM_TYPE_ERROR);
 				$dfgOut->outputln();
 			}
@@ -566,6 +583,11 @@ class PackageRepository {
 				if (file_exists($ext_dir.$entry.'/init$.ext')) {
 					$init_ext_file = trim(file_get_contents($ext_dir.$entry.'/init$.ext'));
 					list($id, $fromVersion) = explode(",", $init_ext_file);
+					if (!file_exists($ext_dir.$entry.'/deploy.xml')) {
+						// this should not happen but you never know.
+						// anyway do nothing in this case.
+						continue;
+					}
 					$dd = new DeployDescriptor(file_get_contents($ext_dir.$entry.'/deploy.xml'));
 					self::$localPackagesToInitialize[$id] = array($dd, $fromVersion);
 
@@ -577,30 +599,7 @@ class PackageRepository {
 	}
 
 	private static function createMWDeployDescriptor($rootDir, $fromVersion = NULL) {
-		$version = Tools::getMediawikiVersion($rootDir);
-		$version = intval(str_replace(".","", $version));
-		$xml = '<?xml version="1.0" encoding="UTF-8"?>
-				<deploydescriptor>
-				    <global>
-				        <version>'.$version.'</version>
-				        <id>mw</id>
-				        <vendor>Ontoprise GmbH</vendor>
-				        <maintainer>Wikimedia foundation</maintainer>
-				        <instdir/>
-				        <description>MediaWiki is a free software open source wiki package written in PHP, originally for use on Wikipedia.</description>
-				        <helpurl>http://www.mediawiki.org/wiki/MediaWiki</helpurl>
-				        <license>GPL-v2</license>
-    			    </global>
-				    <codefiles/>
-				    <wikidumps/>
-				    <resources/>
-				    <configs>
-				    	<update>
-				    		<script file="maintenance/update.php"/>
-				    	</update>
-				    </configs>
-				    </deploydescriptor>';
-
+		$xml = Tools::createMWDeployDescriptor($rootDir);
 		return new DeployDescriptor($xml, $fromVersion);
 	}
 

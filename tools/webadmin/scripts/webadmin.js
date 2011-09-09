@@ -74,7 +74,7 @@ $(function() {
 					dialog[0].innerHTML += resultLog; 
 					dialog[0].scrollTop = dialog[0].scrollHeight;
 				}
-				if (xhr3.responseText.indexOf("__OK__") != -1 || xhr3.responseText.indexOf("$$NOTEXISTS$$") != -1) {
+				if (xhr3.responseText.indexOf("__OK__") != -1 || xhr3.responseText.indexOf("$$NOTEXISTS$$") != -1 || xhr3.responseText.indexOf("$$ERROR$$") != -1) {
 					clearTimeout(timer);
 					$('#df_progress_indicator').hide();
 					// finished installation
@@ -438,7 +438,7 @@ $(function() {
 				var id = parts[1];
 				var version = parts[2].split("_")[0];
 				var patchlevel = parts[2].split("_")[1];
-				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getDependencies&rsargs[]="+encodeURIComponent(id+"-"+version);
+				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getDependencies&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
 				var callbackForExtensions = function(xhr, status) {
 					var extensionsToInstall = $.parseJSON(xhr.responseText);
 					var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=install&rsargs[]="+encodeURIComponent(id+"-"+version);
@@ -633,6 +633,8 @@ $(function() {
 				return;
 			}
 			$('#df_repository_list').append($('<option>'+newrepositoryURL+'</option>'));
+			window.location.href = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?tab=4";
+			
 		};
 		$('#df_settings_progress_indicator').show();
 		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=addToRepository&rsargs[]="+encodeURIComponent($('#df_newrepository_input').val());
@@ -659,6 +661,7 @@ $(function() {
 						return;
 					}
 					entry.remove();
+					window.location.href = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?tab=4";
 			};
 			$('#df_settings_progress_indicator').show();
 			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=removeFromRepository&rsargs[]="+encodeURIComponent(entry.val());
@@ -1114,5 +1117,50 @@ $(function() {
 			
 		});
 		
+	});
+	
+	$('.df_remove_restore_button').click(function(e) {
+		var restorepoint = $(e.currentTarget).attr('id');
+		restorepoint = restorepoint.split("__")[1];
+		$( "#remove-restore-dialog-confirm" ).dialog({
+			resizable: false,
+			height:350,
+			modal: true,
+			 buttons: [
+	              {
+	                  text: dfgWebAdminLanguage.getMessage('df_yes'),
+	                  click: function() {
+	                  	$( this ).dialog( "close" );
+	                  	
+	                  	var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=removeRestorePoint&rsargs[]="+encodeURIComponent(restorepoint);
+	            		var $dialog = $('#df_install_dialog')
+	            		.dialog( {
+	            			autoOpen : false,
+	            			title : dfgWebAdminLanguage.getMessage('df_webadmin_pleasewait'),
+	            			modal: true,
+	            			width: 800,
+	            			height: 500,
+	            			close: function(event, ui) { 
+	            				window.location.href = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?tab=0";
+
+	            			}
+	            		});
+	            		$dialog.html("<div></div>");				
+	            		$dialog.dialog('open');
+	            		$dialog.html('<img src="skins/ajax-loader.gif"/>');
+	            		$('.ui-dialog-titlebar-close').hide();
+	            		$.ajax( { url : url, dataType:"json", complete :restoreStarted });
+	        			 
+	                   }
+	              },
+	               {
+	                  text: dfgWebAdminLanguage.getMessage('df_no'),
+	                  click: function() {
+	          							$( this ).dialog( "close" );
+	          						}
+	              }
+	         ]
+			
+		});
 	});
 });
