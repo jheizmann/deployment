@@ -157,7 +157,7 @@ class Installer {
 	 */
 	public function installOrUpdateFromFile($filePath) {
 		global $dfgOut;
-		$dd = Tools::unzipDeployDescriptor($filePath, $this->tmpFolder);
+		$dd = Tools::unzipDeployDescriptor($filePath, $this->tmpFolder, $this->rootDir);
 		if (is_null($dd)) {
 			throw new InstallationError(DEPLOY_FRAMEWORK_UNCOMPRESS_ERROR, "Uncompressing $filePath failed.");
 		}

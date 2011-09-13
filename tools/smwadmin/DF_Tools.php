@@ -543,13 +543,17 @@ class Tools {
 	/**
 	 * Reads a deploy descriptor from a bundle (zip file).
 	 *
-	 * @param $filePath bundle as zip file (absolute or relative)
+	 * @param string $filePath bundle as zip file (absolute or relative)
+	 * @param string $tempFolder a (writeable) temporary folder
+	 * @param string $mwrootPath (if omitted unzip is supposed to be in current path)
 	 * @return DeployDescriptor or NULL if it could not be found.
 	 */
-	public static function unzipDeployDescriptor($filePath, $tempFolder) {
+	public static function unzipDeployDescriptor($filePath, $tempFolder, $mwrootPath = "") {
+		global $dfgOut;
 		$filePath = Tools::makeUnixPath($filePath);
 		if (!file_exists($filePath)) return NULL;
-		exec('unzip -l "'.$filePath.'"', $output, $res);
+		$unzipExe = empty($mwrootPath) ? 'unzip' : self::getUnzipPath($mwrootPath);
+		exec($unzipExe.' -l "'.$filePath.'"', $output, $res);
 		foreach($output as $o) {
 			if (strpos($o, "deploy.xml") !== false) {
 				$out = $o;
@@ -561,7 +565,7 @@ class Tools {
 		$help1 = explode(" ", $out);
 		$help2 = array_reverse($help1);
 		$dd_path = reset($help2);
-		exec('unzip -o -j "'.$filePath.'" "'.$dd_path.'" -d "'.$tempFile.'"', $output, $res);
+		exec($unzipExe.' -o -j "'.$filePath.'" "'.$dd_path.'" -d "'.$tempFile.'"', $output, $res);
 		$dd = new DeployDescriptor(file_get_contents($tempFile."/deploy.xml"));
 		return $dd;
 	}
@@ -572,13 +576,15 @@ class Tools {
 	 * @param $zipFile Full path to zip file
 	 * @param $filePath File to extract from zip (may be partial if unique)
 	 * @param $destDir Destination file dir
-	 *
+	 * @param string $mwrootPath (if omitted unzip is supposed to be in current path)
+	 * 
 	 * @return boolean True, if succesfull
 	 */
-	public static function unzipFile($zipFile, $filePath, $destDir) {
+	public static function unzipFile($zipFile, $filePath, $destDir, $mwrootPath = "") {
 		$zipFile = Tools::makeUnixPath($zipFile);
 		if (!file_exists($zipFile)) return NULL;
-		exec('unzip -l "'.$zipFile.'"', $output, $res);
+		$unzipExe = empty($mwrootPath) ? 'unzip' : self::getUnzipPath($mwrootPath);
+		exec($unzipExe.' -l "'.$zipFile.'"', $output, $res);
 		foreach($output as $o) {
 			if (strpos($o, $filePath) !== false) {
 				$out = $o;
@@ -587,8 +593,16 @@ class Tools {
 		}
 		if (!isset($out)) return false;
 		$dd_path = reset(array_reverse(explode(" ", $out)));
-		exec('unzip -o -j "'.$zipFile.'" "'.$dd_path.'" -d "'.$destDir.'"', $output, $res);
+		exec($unzipExe.' -o -j "'.$zipFile.'" "'.$dd_path.'" -d "'.$destDir.'"', $output, $res);
 		return $res == 0;
+	}
+	
+	private static function getUnzipPath($mwrootPath) {
+		if (self::isWindows()) {
+			return '"'.$mwrootPath.'/deployment/tools/unzip"';
+		} else {
+			return 'unzip'; // assume it is in path on Linux
+		}
 	}
 
 
