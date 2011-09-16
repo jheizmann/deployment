@@ -2,7 +2,7 @@
 <deploydescriptor>
 	<global>
 		<version>156</version>
-		<patchlevel>18</patchlevel>
+		<patchlevel>19</patchlevel>
 		<id>deployment</id>
 		<vendor>ontoprise GmbH</vendor>
 		<maintainer>ontoprise GmbH</maintainer>
