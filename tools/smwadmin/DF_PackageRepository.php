@@ -308,6 +308,7 @@ class PackageRepository {
 		$results = array();
 
 		foreach(self::getPackageRepository() as $repo) {
+			if ($repo === false) continue;
 			$versions = $repo->xpath("/root/extensions/extension[@id='$packageID']/version");
 
 			if ($versions !== false) {
@@ -330,6 +331,7 @@ class PackageRepository {
 	public static function getAllPackages() {
 		$results = array();
 		foreach(self::getPackageRepository() as $repo_url => $repo) {
+			if ($repo === false) continue;
 			$packages = $repo->xpath("/root/extensions/extension");
 			foreach($packages as $p) {
 				$id = (string) $p->attributes()->id;
