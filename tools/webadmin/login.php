@@ -182,6 +182,7 @@ function dffCheckEnvironment() {
 	} else {
 		unlink("$mwrootDir/extensions/test_file_for_webadmin");
 	}
+	checkWritePriviledgesOnExtensions("$mwrootDir/extensions", $result);
 
 	// check if external processes can be run
 	$phpExe = 'php';
@@ -194,6 +195,14 @@ function dffCheckEnvironment() {
 	} else if ($ret == 0 && preg_match("/5\\.\\d+\\.\\d+/", $out[0]) === 0) {
 		$result .= "<li>Wrong PHP version: ".$out[0]." (PHP 5.x.x required, except 5.3.1)</li>";
 	}
+	
+    // check for PHP5 if 'df_php_executable' is not explicitly set.
+    if (!array_key_exists('df_php_executable', DF_Config::$settings) || DF_Config::$settings['df_php_executable'] == 'php') {
+        @exec("php5 --version", $out, $ret);
+        if ($ret == 0) {
+            $result .= "<li>PHP5 executable is available. Please configure in deployment/settings.php: <code>'df_php_executable' => 'php5'</code></li>";
+        }
+    }
 
 	// check if temp folder can be written
 	$tempFolder = Tools::getTempDir();
@@ -228,8 +237,57 @@ function dffCheckEnvironment() {
 			$result .= "<li>Could not find 'curl'-PHP extension. Install it or deactivate authentication by wiki. (DF_Config::\$df_authorizeByWiki=false;)</li>";
 		}
 	}
+	
+	// check socket_create (some webhosters provide crappy PHP installations which lacks socket functions)
+	if (function_exists("socket_create")) {
+		@$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		if ($socket === false) {
+			$result .= "<li>Could not create a socket. Are you sure you run a standard PHP installation?</li>";
+		}
+	} else {
+		$result .= "<li>Could not find 'socket_create' PHP-function. Are you sure you run a standard PHP installation?</li>";
+	}
 	return empty($result) ? true : "<ul>$result</ul>";
 }
+
+/**
+ * Checks if the extensions in the extension folder are writeable. The used heuristic
+ * is to check if the deploy descriptors (if any) are writable.
+ *
+ * @param string $ext_dir Extensions folder
+ * @param & $text (out) Messages
+ *
+ * @return boolean True if everything is writable, false otherwise.
+ */
+function checkWritePriviledgesOnExtensions($ext_dir, & $text) {
+    $result = true;
+    if (substr($ext_dir,-1)!='/'){
+        $ext_dir .= '/';
+    }
+    $handle = @opendir($ext_dir);
+    if (!$handle) {
+        return;
+    }
+
+    while ($entry = readdir($handle) ){
+        if ($entry[0] == '.'){
+            continue;
+        }
+
+        if (is_dir($ext_dir.$entry)) {
+            // check if there is a init$.ext
+            if (file_exists($ext_dir.$entry.'/deploy.xml') && !is_writable($ext_dir.$entry.'/deploy.xml')) {
+                $text .= "<li>Make ".$ext_dir.$entry." writeable</li>";
+                $result = false;
+
+            }
+        }
+
+    }
+    @closedir($handle);
+    return $result;
+}
+
 $heading = $dfgLang->getLanguageString('df_webadmin');
 $username = $dfgLang->getLanguageString('df_username');
 $password = $dfgLang->getLanguageString('df_password');
