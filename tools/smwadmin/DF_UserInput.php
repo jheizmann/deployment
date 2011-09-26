@@ -47,6 +47,21 @@ class DFUserInput {
 			// copy proposals
 			foreach($userParams as $name => $up) {
 				list($type, $description, $proposal) = $up;
+				if (!is_null($proposal) && $proposal != '') {
+					$parts = explode(":", $proposal);
+					if (count($parts) > 1) {
+						switch($parts[0]) {
+							case "search": {
+								$proposal = Tools::whereis(trim($parts[1]));
+								$proposal = trim($proposal);
+								break;
+							}
+							default:
+								$proposal = '';
+								break;
+						}
+					}
+				}
 				$mapping[$name] = $proposal;
 			}
 			return;
@@ -148,15 +163,15 @@ class DFUserInput {
 			default: $result = false;
 		}
 	}
-	
-    /**
-     * Asks for a confirmation.
-     */
-    public static function consoleConfirm($msg = "") {
-    	global $dfgNoAsk;
-    	if ((isset($dfgNoAsk) && $dfgNoAsk == true)) return true;
-        if ($msg !== '') print "\n$msg";
-        $a = trim(fgets(STDIN));
-        return strtolower($a) === 'y';
-    }
+
+	/**
+	 * Asks for a confirmation.
+	 */
+	public static function consoleConfirm($msg = "") {
+		global $dfgNoAsk;
+		if ((isset($dfgNoAsk) && $dfgNoAsk == true)) return true;
+		if ($msg !== '') print "\n$msg";
+		$a = trim(fgets(STDIN));
+		return strtolower($a) === 'y';
+	}
 }
