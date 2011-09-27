@@ -622,10 +622,11 @@ class Tools {
 	 * Returns the location of a file (first occurence if more than on exist).
 	 *
 	 * @param string $name
-	 *
+	 * @param string rootdir MW root folder
 	 */
-	public static function whereis($name) {
+	public static function whereis($name, $rootDir = NULL) {
 		if (self::isWindows()) {
+			if (!is_null($rootDir)) chdir("$rootDir/deployment/tools");
 			exec("whereis.bat $name", $out, $ret);
 			return str_replace("\\", "/", reset($out));
 		} else {
