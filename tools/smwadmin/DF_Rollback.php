@@ -54,6 +54,9 @@ class Rollback {
 			$homeDir = Tools::getHomeDir();
 			if (is_null($homeDir)) throw new DF_SettingError(DEPLOY_FRAMEWORK_NO_HOME_DIR, "No homedir found. Please configure one in settings.php");
 		}
+		if (!is_writable($homeDir)) {
+			throw new DF_SettingError(DF_HOME_DIR_NOT_WRITEABLE, "Homedir not writeable.");
+		}
 		$wikiname = DF_Config::$df_wikiName;
 		$this->restoreDir = "$homeDir/$wikiname/df_restore";
 
