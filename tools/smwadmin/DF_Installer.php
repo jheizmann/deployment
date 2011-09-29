@@ -110,7 +110,7 @@ class Installer {
 		$this->rollback = Rollback::getInstance($this->rootDir);
 
 		$this->force = $force;
-		
+
 		$this->logger = Logger::getInstance();
 	}
 
@@ -285,7 +285,13 @@ class Installer {
 		// remove extension code
 		$this->logger->info("Remove code of ".$ext->getID());
 		$dfgOut->outputln( "[Removing code for ".$ext->getID()."...");
-		Tools::remove_dir($this->rootDir."/".$ext->getInstallationDirectory());
+		if ($ext->isNonPublic()) {
+			$opSoftwareDir = $this->getNonPublicDirectory($ext);
+			$dfgOut->output( $opSoftwareDir );
+			Tools::remove_dir($opSoftwareDir);
+		} else {
+			Tools::remove_dir($this->rootDir."/".$ext->getInstallationDirectory());
+		}
 		$dfgOut->output( "done.]");
 
 		// may contain files which are not located in the installation directory
@@ -314,13 +320,13 @@ class Installer {
 
 			try {
 				$dd = PackageRepository::getLatestDeployDescriptor($tl_ext->getID());
-	
+
 				if ($dd->getVersion() > $localPackages[$dd->getID()]->getVersion()
 				|| ($dd->getVersion() == $localPackages[$dd->getID()]->getVersion() && $dd->getPatchlevel() > $localPackages[$dd->getID()]->getPatchlevel())) {
 					$this->collectDependingExtensions($dd, $updatesNeeded, $localPackages, true);
 					$updatesNeeded[] = array($dd, $dd->getVersion(), $dd->getVersion());
 				}
-				
+
 			}  catch(RepositoryError $e) {
 				if ($e->getErrorCode() == DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST) {
 					// local bundle (e.g. ontology). ignore it.
@@ -532,9 +538,9 @@ class Installer {
 			if (!is_null($fromVersion)) {
 				$desc->createConfigElements($fromVersion, $fromPatchlevel);
 			}
-			
+
 			global $dfgNoAsk;
-            if (!$dfgNoAsk) {
+			if (!$dfgNoAsk) {
 				$success = $this->rollback->saveInstallation();
 				if (!$success) {
 					throw new InstallationError(DEPLOY_FRAMEWORK_CREATING_RESTOREPOINT_FAILED, "Could not copy the installation");
@@ -614,7 +620,7 @@ class Installer {
 		global $dfgForce;
 		foreach($localPackages as $tupl) {
 			list($desc, $fromVersion) = $tupl;
-			
+
 			$ont_installer->installOntologies($desc);
 			$res_installer->installOrUpdateResources($desc);
 			$res_installer->installOrUpdateWikidumps($desc, $fromVersion, $this->force ? DEPLOYWIKIREVISION_FORCE : DEPLOYWIKIREVISION_WARN);
@@ -741,27 +747,17 @@ class Installer {
 		$unzipDirectory = $this->rootDir;
 		if ($dd->isNonPublic()) {
 
-			// default location
-			$unzipDirectory = Tools::getProgramDir()."/Ontoprise/".$dd->getInstallationDirectory();
-
-			if (file_exists($unzipDirectory)) {
-				// if already somewhere installed, use this (only Windows)
-				$OPSoftware = Tools::getOntopriseSoftware($dd->getID());
-				if (!is_null($OPSoftware) && count($OPSoftware) > 0) {
-					$unzipDirectory = trim(reset($OPSoftware));
-				}
-
-			}
+			$unzipDirectory = $this->getNonPublicDirectory($dd);
 			Tools::mkpath($unzipDirectory);
 		}
 		$dfgOut->outputln("unzip into $unzipDirectory");
 		$dfgOut->outputln("[unzip ".$id."-$version.zip...");
-	    if (Tools::isWindows()) {
-            global $rootDir;
-            exec('"'.$rootDir.'/tools/unzip.exe" -o "'.$this->tmpFolder."\\".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
-        } else {
-            exec('unzip -o "'.$this->tmpFolder."/".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
-        }
+		if (Tools::isWindows()) {
+			global $rootDir;
+			exec('"'.$rootDir.'/tools/unzip.exe" -o "'.$this->tmpFolder."\\".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
+		} else {
+			exec('unzip -o "'.$this->tmpFolder."/".$id."-$version.zip\" -d \"".$unzipDirectory.'" '.$excludedFilesString);
+		}
 		$dfgOut->output("done.]");
 	}
 
@@ -776,33 +772,36 @@ class Installer {
 		$unzipDirectory = $this->rootDir;
 		if ($dd->isNonPublic()) {
 
-			// default location
-			$unzipDirectory = Tools::getProgramDir()."/Ontoprise/".$dd->getInstallationDirectory();
-
-			if (file_exists($unzipDirectory)) {
-				// if already somewhere installed, use this (only Windows)
-				$OPSoftware = Tools::getOntopriseSoftware($dd->getID());
-				if (!is_null($OPSoftware) && count($OPSoftware) > 0) {
-					$unzipDirectory = trim(reset($OPSoftware));
-				}
-
-			}
+			$unzipDirectory = $this->getNonPublicDirectory($dd);
 			Tools::mkpath($unzipDirectory);
 		}
 
 		$dfgOut->outputln("[unzip ".$filePath."...");
-	    if (Tools::isWindows()) {
-            global $rootDir;
-            exec('"'.$rootDir.'/tools/unzip.exe" -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
-        } else {
-            exec('unzip -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
-        }
+		if (Tools::isWindows()) {
+			global $rootDir;
+			exec('"'.$rootDir.'/tools/unzip.exe" -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
+		} else {
+			exec('unzip -o "'.$filePath.'" -d "'.$unzipDirectory.'"');
+		}
 		$dfgOut->output("done.]");
 
 	}
 
 
+	private function getNonPublicDirectory($dd) {
+		// default location
+		$unzipDirectory = Tools::getProgramDir()."/Ontoprise/".$dd->getInstallationDirectory();
 
+		if (file_exists($unzipDirectory)) {
+			// if already somewhere installed, use this (only Windows)
+			$OPSoftware = Tools::getOntopriseSoftware($dd->getID());
+			if (!is_null($OPSoftware) && count($OPSoftware) > 0) {
+				$unzipDirectory = trim(reset($OPSoftware));
+			}
+
+		}
+		return $unzipDirectory;
+	}
 	/**
 	 * Calculates for any extension individually the possible interval of version,
 	 * which can be installed. Removes all packages which can not be
@@ -966,8 +965,8 @@ class Installer {
 			$dep = $p->getDependency($dd->getID());
 			if ($dep == NULL) continue;
 			list($id, $from, $to, $optional) = $dep;
-            if ($optional) continue;
-            
+			if ($optional) continue;
+
 			// if $dd's version exceeds the limit of the installed,
 			// try to find an update
 			if ($dd->getVersion() > $to) {
