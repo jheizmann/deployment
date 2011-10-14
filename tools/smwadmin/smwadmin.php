@@ -788,8 +788,8 @@ function dffHandleGlobalUpdate($dfgCheckDep) {
 			if (count($contradictions) > 0) {
 				$dfgOut->outputln("\nThe following extensions can not be installed/updated due to conflicts:");
 				foreach($contradictions as $etu) {
-					list($dd, $min, $max) = $etu;
-					$dfgOut->outputln("* ".$dd->getID());
+					list($id, $min, $max) = $etu;
+					$dfgOut->outputln("* ".$id);
 				}
 			}
 			$dfgOut->outputln("\n");

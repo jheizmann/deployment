@@ -970,12 +970,19 @@ class Installer {
 			// if $dd's version exceeds the limit of the installed,
 			// try to find an update
 			if ($dd->getVersion() > $to) {
+				$nonexistingDep=false;
 				$versions = PackageRepository::getAllVersions($p->getID());
 				// iterate through the available versions
 				$updateFound = false;
 				foreach($versions as $v) {
 					$ptoUpdate = PackageRepository::getDeployDescriptor($p->getID(), $v);
-					list($id_ptu, $from_ptu, $to_ptu) = $ptoUpdate->getDependency($dd->getID());
+					$dependency = $ptoUpdate->getDependency($dd->getID());
+					if (is_null($dependency)) {
+						$nonexistingDep = true;
+						break;
+					}
+					list($id_ptu, $from_ptu, $to_ptu) = $dependency;
+
 					if ($from_ptu <= $dd->getVersion() && $to_ptu >= $dd->getVersion()) {
 
 						$packagesToUpdate[] = array($p, $from_ptu, $to_ptu);
@@ -983,7 +990,7 @@ class Installer {
 						break;
 					}
 				}
-				if (!$updateFound) throw new InstallationError(DEPLOY_FRAMEWORK_COULD_NOT_FIND_UPDATE, "Could not find update for: ".$p->getID());
+				if (!$updateFound && !$nonexistingDep) throw new InstallationError(DEPLOY_FRAMEWORK_COULD_NOT_FIND_UPDATE, "Could not find update for: ".$p->getID());
 
 				$this->collectSuperExtensions($ptoUpdate, $packagesToUpdate, $localPackages);
 			}

@@ -254,7 +254,15 @@ class PackageRepository {
 			} catch(RepositoryError $e) {
 				// try next version
 			}
+			//XXX: hack for validator extension (its version number can not be expressed in old schema)
+			try {
+				$dd = self::getDeployDescriptor($ext_id, "0".$i);
+				return $dd;
+			} catch(RepositoryError $e) {
+				// try next version
+			}
 		}
+
 		throw new RepositoryError(DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST, "Can not find bundle: $ext_id in version range $minversion-$maxversion");
 	}
 
