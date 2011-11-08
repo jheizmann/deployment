@@ -125,6 +125,11 @@ function authenticateUser($username, $password, $acceptMIME=NULL) {
         if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
         	curl_setopt($ch,CURLOPT_USERPWD,trim($_SERVER['PHP_AUTH_USER'].":".$_SERVER['PHP_AUTH_PW']));
         }
+        
+        if ($proto == "https") {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); // don't verify ssl
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        }
 
         // Execute
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
