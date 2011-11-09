@@ -187,7 +187,13 @@ class DeployWikiOntologyRevision extends WikiRevision {
 		$pageId = $this->title->getArticleId(GAID_FOR_UPDATE);
 
 		if( $pageId == 0 ) {
-			// page does not exist, just import
+			// page does not exist
+			$om = new OntologyMerger();
+			$emptyText = ""; // there is no initial text
+			// add ALWAYS a ontology bundle section
+			$this->setText($om->addBundle($this->bundleID, $emptyText, $this->text));
+			
+			// and import...
 			$res = parent::importOldRevision();
 			$this->logger->info("Imported page: ".$this->title->getPrefixedText());
 			$dfgOut->outputln("\t[Imported page] ".$this->title->getPrefixedText());
