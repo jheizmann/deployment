@@ -211,8 +211,7 @@ class DeployWikiOntologyRevision extends WikiRevision {
 					
 					// create section for existing content if it belongs to a bundle
 					$existingBundle = DFBundleTools::getBundleID($this->title);
-					print "\nExisting bundle: $existingBundle";
-					print "\nTitle bundle: ".$this->title->getText();
+					
 					if (!is_null($existingBundle)) {
 						$newPageText = "";
 						$newPageText = $om->addBundle($existingBundle, $newPageText, $wikitext);
