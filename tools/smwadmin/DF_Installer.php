@@ -130,14 +130,17 @@ class Installer {
 		$dfgOut->outputln("The following packages need to be installed");
 		foreach($extensions_to_update as $etu) {
 			list($dd, $min, $max) = $etu;
-			$dfgOut->outputln("- ".$dd->getID()."-".$dd->getVersion());
+			$id = $dd->getID();
+			$dfgOut->outputln("\t*$id-$min");
 		}
 
 		if (count($contradictions) > 0) {
 			$dfgOut->outputln("The following extension can not be installed/updated due to conflicts:");
 			foreach($contradictions as $etu) {
 				list($dd, $min, $max) = $etu;
-				$dfgOut->outputln("- ".$dd->getID());
+				$id = $dd->getID();
+					
+				$dfgOut->outputln("\t*$id-$min");
 			}
 		}
 		$this->installOrUpdatePackages($extensions_to_update);
@@ -554,7 +557,7 @@ class Installer {
 			}
 
 
-			list($url,$repo_url) = PackageRepository::getVersion($id, $desc->getVersion());
+			list($url,$repo_url) = PackageRepository::getVersion($id, $min);
 			$credentials = PackageRepository::getCredentials($repo_url);
 
 			$this->logger->info("Download $id-".$desc->getVersion().".zip");
@@ -933,6 +936,7 @@ class Installer {
 			if (!$this->checkIfAlreadyContained($packagesToUpdate, $desc_min)) {
 				$packagesToUpdate[] = array($desc_min, $minVersion, $maxVersion);
 				$this->collectDependingExtensions($desc_min, $packagesToUpdate, $localPackages, $globalUpdate);
+				$this->collectSuperExtensions($desc_min, $packagesToUpdate, $localPackages);
 			}
 		}
 
@@ -984,8 +988,7 @@ class Installer {
 					list($id_ptu, $from_ptu, $to_ptu) = $dependency;
 
 					if ($from_ptu <= $dd->getVersion() && $to_ptu >= $dd->getVersion()) {
-
-						$packagesToUpdate[] = array($p, $from_ptu, $to_ptu);
+						$packagesToUpdate[] = array($p, $v, $v);
 						$updateFound = true;
 						break;
 					}
@@ -993,6 +996,7 @@ class Installer {
 				if (!$updateFound && !$nonexistingDep) throw new InstallationError(DEPLOY_FRAMEWORK_COULD_NOT_FIND_UPDATE, "Could not find update for: ".$p->getID());
 
 				$this->collectSuperExtensions($ptoUpdate, $packagesToUpdate, $localPackages);
+				$this->collectDependingExtensions($ptoUpdate, $packagesToUpdate, $localPackages);
 			}
 		}
 

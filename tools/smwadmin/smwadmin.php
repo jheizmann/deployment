@@ -840,7 +840,7 @@ function dffHandleInstallOrUpdate($packageID, $version) {
 		foreach($extensions_to_update as $etu) {
 			list($desc, $min, $max) = $etu;
 			$id = $desc->getID();
-			$dfgOut->outputln("\t*$id-".Tools::addVersionSeparators(array($min, $desc->getPatchlevel())));
+		    $dfgOut->outputln("\t*$id-$min");
 		}
 
 
@@ -889,7 +889,7 @@ function dffCheckWikiContext() {
  *
  * @param Exception $e (InstallationError, HttpError, RollbackInstallation)
  */
-function dffExitOnFatalError($e) {
+function dffExitOnFatalError($e = NULL) {
 	global $dfgOut;
 	$dfgOut->outputln();
 
