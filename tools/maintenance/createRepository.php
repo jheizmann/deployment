@@ -5,7 +5,7 @@
  *
  * Creates a DF repository from the SVN version. Must be done once a new release available
  *
- * Usage:   php createRepsoitory.php -o <repository path>  -r release-num 
+ * Usage:   php createRepsoitory.php -o <repository path>  -r release-num
  *          php createRepsoitory.php -o <repository path>  --head [ --empty ]
  *
  * @author: Kai Kühn / ontoprise / 2009
@@ -38,7 +38,6 @@ for( $arg = reset( $argv ); $arg !== false; $arg = next( $argv ) ) {
 	//-r => release num
 	if ($arg == '-r') {
 		$releasenum = next($argv);
-		$latestReleaseAttribute = "latestrelease=\"$releasenum\"";
 		$release = str_replace('.','',$releasenum);
 		continue;
 	}
@@ -48,16 +47,22 @@ for( $arg = reset( $argv ); $arg !== false; $arg = next( $argv ) ) {
 		$head = true;
 		continue;
 	}
-    
-    if ($arg == '--latest') {
-        $latest = true;
-        continue;
-    }
-    
-    if ($arg == '--empty') {
-        $emptyRepo = true;
-        continue;
-    }
+
+	if ($arg == '--latest') {
+		$latest = true;
+		continue;
+	}
+
+	if ($arg == '--latestrelease') {
+		$releasenum = next($argv);
+		$latestReleaseAttribute = "latestrelease=\"$releasenum\"";
+		continue;
+	}
+
+	if ($arg == '--empty') {
+		$emptyRepo = true;
+		continue;
+	}
 }
 
 if (!isset($outputDir)) {
@@ -116,11 +121,11 @@ echo "\nWriting deploy descriptors...";
 // create symlinks for Linux and Windows 7
 $createSymlinks=true;
 if (Tools::isWindows($os) && $latest) {
-	
-    $createSymlinks = ($os == 'Windows 7');
-    if (!$createSymlinks) {
-        echo "Be careful: Cannot create symbolic links on Windows <= 7!";
-    }
+
+	$createSymlinks = ($os == 'Windows 7');
+	if (!$createSymlinks) {
+		echo "Be careful: Cannot create symbolic links on Windows <= 7!";
+	}
 }
 
 $outputDir = str_replace("\\", "/", $outputDir);
@@ -157,33 +162,33 @@ function createEntry($dd, $dd_file, $outputDir, $latest, $createSymlinks) {
 	Tools::mkpath($outputDir.$dd->getID());
 	copy($dd_file, $outputDir.$dd->getID()."/deploy-".$version.".xml");
 	print "\nCreated: $outputDir$targetFile";
-    
-    // creates links
-    $id = $dd->getID();
-    $version = $dd->getVersion();
-    if ($createSymlinks && $latest) {
-        // remove symbolic link if existing
-        if (file_exists($outputDir."/$id/deploy.xml")) {
-            unlink($outputDir."/$id/deploy.xml");
-        }
-        // create symbolic link
-        if (Tools::isWindows()) {
-            $target = str_replace("/", "\\", "$outputDir/$id/deploy-$version.xml");
-            $link = str_replace("/", "\\", "$outputDir/$id/deploy.xml");
-            exec("mklink \"$link\" \"$target\"", $out, $res);
-        } else{
-            exec("ln -s $outputDir/$id/deploy-$version.xml $outputDir/$id/deploy.xml", $out, $res);
-        }
-        if ($res == 0) print "\nCreated link: $outputDir/".$id.'/deploy.xml';
-    }
-	
+
+	// creates links
+	$id = $dd->getID();
+	$version = $dd->getVersion();
+	if ($createSymlinks && $latest) {
+		// remove symbolic link if existing
+		if (file_exists($outputDir."/$id/deploy.xml")) {
+			unlink($outputDir."/$id/deploy.xml");
+		}
+		// create symbolic link
+		if (Tools::isWindows()) {
+			$target = str_replace("/", "\\", "$outputDir/$id/deploy-$version.xml");
+			$link = str_replace("/", "\\", "$outputDir/$id/deploy.xml");
+			exec("mklink \"$link\" \"$target\"", $out, $res);
+		} else{
+			exec("ln -s $outputDir/$id/deploy-$version.xml $outputDir/$id/deploy.xml", $out, $res);
+		}
+		if ($res == 0) print "\nCreated link: $outputDir/".$id.'/deploy.xml';
+	}
+
 }
 
 function addSeparators($version, $sep = ".") {
-    $sep_version = "";
-    for($i = 0; $i < strlen($version); $i++) {
-        if ($i>0) $sep_version .= $sep;
-        $sep_version .= $version[$i];
-    }
-    return $sep_version;
+	$sep_version = "";
+	for($i = 0; $i < strlen($version); $i++) {
+		if ($i>0) $sep_version .= $sep;
+		$sep_version .= $version[$i];
+	}
+	return $sep_version;
 }
