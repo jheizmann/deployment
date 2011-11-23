@@ -30,6 +30,8 @@
  *
  */
 define('DEPLOY_FRAMEWORK_VERSION', '{{$VERSION}} [B${env.BUILD_NUMBER}]');
+define('DF_REPOSITORY_LIST_LINK', 'http://dailywikibuilds.ontoprise.com/info/repository_list.html');
+
 
 // termination constants
 define('DF_TERMINATION_WITH_FINALIZE', 0);
@@ -312,6 +314,22 @@ try {
 	dffExitOnFatalError($e);
 }
 
+// check for new release
+$latestrelease = PackageRepository::getLatestRelease();
+if ($latestrelease !== false) {
+	$currentrelease = str_replace(".", "", DEPLOY_FRAMEWORK_VERSION);
+	if (strpos($currentrelease, "_") !== false) {
+		$currentrelease = substr($currentrelease, 0, strpos($currentrelease, "_"));
+	}
+	$latestrelease = str_replace(".", "", $latestrelease);
+	if (strpos($latestrelease, "_") !== false) {
+		$latestrelease = substr($latestrelease, 0, strpos($latestrelease, "_"));
+	}
+	if ($currentrelease < $latestrelease) {
+		$dfgOut->outputln("\n\n  !!!!!!!!!! NEW release available !!!!!!!!!! Check: ".DF_REPOSITORY_LIST_LINK."\n\n");
+	}
+}
+
 if ($dfgInstallPackages) {
 	// include commandLine.inc to be in maintenance mode
 	$mediaWikiLocation = dirname(__FILE__) . '/../../..';
@@ -502,7 +520,7 @@ if (count($ontologiesToInstall) > 0) {
 		}
 
 		global $dfgForce;
-		
+
 		try {
 
 			$bundleID = $oInstaller->installOrUpdateOntology($filePath, false, $dfgBundleID);
@@ -840,7 +858,7 @@ function dffHandleInstallOrUpdate($packageID, $version) {
 		foreach($extensions_to_update as $etu) {
 			list($desc, $min, $max) = $etu;
 			$id = $desc->getID();
-		    $dfgOut->outputln("\t*$id-$min");
+			$dfgOut->outputln("\t*$id-$min");
 		}
 
 

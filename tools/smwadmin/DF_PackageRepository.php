@@ -201,6 +201,22 @@ class PackageRepository {
 	public static function clearPackageRepository() {
 		self::$repo_dom = array();
 	}
+    
+	/**
+	 * Returns the number of the latest release the repository contains.
+	 * 
+	 * @return int
+	 */
+	public static function getLatestRelease() {
+		$latestreleases = array();
+		foreach(self::getPackageRepository() as $url => $repo) {
+			$node = $repo->xpath("/root[@latestrelease]");
+			if (is_null($node) || $node == false || count($node) == 0) continue;
+			$latestreleases[] = (string) $node[0]->attributes()->latestrelease;
+		}
+		sort($latestreleases);
+		return reset(array_reverse($latestreleases));
+	}
 
 	/**
 	 * Returns deploy descriptor of package $ext_id in the latest version.
@@ -444,13 +460,13 @@ class PackageRepository {
 	 */
 	public static function getVersion($packageID, $version) {
 		$results = array();
-		
+
 		//XXX: exception for validator extension
 		// cause its version can no be expressed in old schema
 		if ($packageID == 'validator' && $version == '40') {
 			$version = "0410";
 		}
-		
+
 		foreach(self::getPackageRepository() as $url => $repo) {
 			$package = $repo->xpath("/root/extensions/extension[@id='$packageID']/version[@ver='$version']");
 
