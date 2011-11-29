@@ -7,8 +7,14 @@
 #          http://openrepos.com/repository
 #
 
-# Public extension repository of Ontoprise
-http://dailywikibuilds.ontoprise.com/nightly_repository/
+# Public extension repository of Ontoprise / release 1.6.0
+http://dailywikibuilds.ontoprise.com/repository160
+
+# Repository of latest release
+# http://dailywikibuilds.ontoprise.com/repository
+
+# Repository of nightly builds (WARNING: unstable)
+# http://dailywikibuilds.ontoprise.com/nightly_repository
 
 # For experimental stuff
 # http://dailywikibuilds.ontoprise.com/experimental_repository/
