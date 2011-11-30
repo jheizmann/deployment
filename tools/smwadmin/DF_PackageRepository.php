@@ -463,7 +463,7 @@ class PackageRepository {
 
 		//XXX: exception for validator extension
 		// cause its version can no be expressed in old schema
-		if ($packageID == 'validator' && $version == '40') {
+		if ($packageID == 'validator' && $version == '410') {
 			$version = "0410";
 		}
 
