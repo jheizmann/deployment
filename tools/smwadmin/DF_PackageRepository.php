@@ -470,7 +470,8 @@ class PackageRepository {
 			$download_url = trim((string) $package[0]->attributes()->url);
 			break;
 		}
-		if (!isset($download_url)) throw new RepositoryError(DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST, "Can not find bundle: $packageID-$version. Missing repository?");
+		$versionString = $version->toVersionString();
+		if (!isset($download_url)) throw new RepositoryError(DEPLOY_FRAMEWORK_REPO_PACKAGE_DOES_NOT_EXIST, "Can not find bundle: $packageID-$versionString. Missing repository?");
 
 		return array($download_url, $repo_url);
 	}
