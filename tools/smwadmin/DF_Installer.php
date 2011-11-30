@@ -725,6 +725,13 @@ class Installer {
 		global $dfgForce;
 		foreach($localPackages as $tupl) {
 			list($desc, $fromVersion) = $tupl;
+				
+			// mark as initialized
+			$installDirectory = $this->rootDir."/".$desc->getInstallationDirectory();
+			if ($desc->isNonPublic()) {
+				$installDirectory = $this->getNonPublicDirectory($desc);
+			}
+
 			if (!file_exists($installDirectory."/init$.ext")) {
 				// already initialized
 				continue;
@@ -734,18 +741,13 @@ class Installer {
 			$res_installer->installOrUpdateWikidumps($desc, $fromVersion, $this->force ? DEPLOYWIKIREVISION_FORCE : DEPLOYWIKIREVISION_WARN);
 			$res_installer->installOrUpdateMappings($desc);
 			$res_installer->installNamespaces($desc);
+			
 
-			// mark as initialized
-			$installDirectory = $this->rootDir."/".$desc->getInstallationDirectory();
-			if ($desc->isNonPublic()) {
-				$installDirectory = $this->getNonPublicDirectory($desc);
-			}
-				
 			$this->logger->info("Mark extension as initialized: ".$desc->getID());
 			$dfgOut->outputln("[Clean up...");
 			unlink($installDirectory."/init$.ext");
 			$dfgOut->output("done.]\n\n");
-				
+
 		}
 
 		// print (optional) notices
