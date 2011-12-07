@@ -141,59 +141,89 @@ class DFVersion {
 	 *
 	 * @param array of tuples(DFVersion, patchlevel, ...) $versions
 	 */
-	public static function sortVersions(& $versions) {
+public static function sortVersions(& $versions) {
 
-		// sort
-		for($i = 0; $i < count($versions); $i++) {
-			for($j = 0; $j < count($versions)-1; $j++) {
+        // sort
+        for($i = 0; $i < count($versions); $i++) {
+            for($j = 0; $j < count($versions)-1; $j++) {
 
-				list($ver1, $pl1) = $versions[$j];
-				list($ver2, $pl2) = $versions[$j+1];
-				if ($ver1->isEqual($ver2)) {
-					if ($pl1 < $pl2) {
-						$help = $versions[$j];
-						$versions[$j] = $versions[$j+1];
-						$versions[$j+1] = $help;
-					}
-				}
-				if ($ver1->isLower($ver2)) {
-					$help = $versions[$j];
-					$versions[$j] = $versions[$j+1];
-					$versions[$j+1] = $help;
-				}
-			}
-		}
+                if (is_array($versions[$j])) {
+                    // DFVersion with patchlevel
+                    list($ver1, $pl1) = $versions[$j];
+                    list($ver2, $pl2) = $versions[$j+1];
+                    if ($ver1->isEqual($ver2)) {
+                        if ($pl1 < $pl2) {
+                            $help = $versions[$j];
+                            $versions[$j] = $versions[$j+1];
+                            $versions[$j+1] = $help;
+                        }
+                    }
+                    if ($ver1->isLower($ver2)) {
+                        $help = $versions[$j];
+                        $versions[$j] = $versions[$j+1];
+                        $versions[$j+1] = $help;
+                    }
+                } else {
+                    // DFVersion only
+                    $ver1 = $versions[$j];
+                    $ver2 = $versions[$j+1];
+                    if ($ver1->isEqual($ver2)) {
+                        if ($pl1 < $pl2) {
+                            $help = $versions[$j];
+                            $versions[$j] = $versions[$j+1];
+                            $versions[$j+1] = $help;
+                        }
+                    }
+                    if ($ver1->isLower($ver2)) {
+                        $help = $versions[$j];
+                        $versions[$j] = $versions[$j+1];
+                        $versions[$j+1] = $help;
+                    }
+                }
+            }
+        }
 
-		// remove doubles
-		$result = array();
-		$last = NULL;
-		for($i = 0; $i < count($versions); $i++) {
-			if (is_null($last)) {
-				$last = $versions[$i];
-				continue;
-			}
+        // remove doubles
+        $result = array();
+        $last = NULL;
+        for($i = 0; $i < count($versions); $i++) {
+            if (is_null($last)) {
+                $last = $versions[$i];
+                continue;
+            }
+            if (is_array($versions[$j])) {
+                // DFVersion with patchlevel
+                list($ver1, $pl1) = $last;
+                list($ver2, $pl2) = $versions[$i];
+                if($ver1->isEqual($ver2) && $pl1 === $pl2) {
+                    $versions[$i] = NULL;
+                } else {
+                    $last = $versions[$i];
+                }
+            } else {
+                // DFVersion
+                $ver1 = $last;
+                $ver2 = $versions[$i];
+                if($ver1->isEqual($ver2) && $pl1 === $pl2) {
+                    $versions[$i] = NULL;
+                } else {
+                    $last = $versions[$i];
+                }
+            }
 
-			list($ver1, $pl1) = $last;
-			list($ver2, $pl2) = $versions[$i];
-			if($ver1->isEqual($ver2) && $pl1 === $pl2) {
-				$versions[$i] = NULL;
-			} else {
-				$last = $versions[$i];
-			}
+        }
 
-		}
+        // remove NULLs
+        $vresult = array();
+        foreach($versions as $v) {
+            if (!is_null($v)) $vresult[] = $v;
+        }
 
-		// remove NULLs
-		$vresult = array();
-		foreach($versions as $v) {
-			if (!is_null($v)) $vresult[] = $v;
-		}
+        // set result array
+        $versions = array();
+        foreach($vresult as $v) $versions[] = $v;
 
-		// set result array
-		$versions = array();
-		foreach($vresult as $v) $versions[] = $v;
-
-	}
+    }
 
 	/**
 	 * Returns the maximum version.
