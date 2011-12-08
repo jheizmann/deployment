@@ -597,7 +597,8 @@ class Installer {
 			}
 
 
-			list($url,$repo_url) = PackageRepository::getVersion($id, $min);
+			$dd_fromrange = PackageRepository::getDeployDescriptorFromRange($id, $min, $max );
+            list($url,$repo_url) = PackageRepository::getDownloadURL($id, $dd_fromrange->getVersion() );
 			$credentials = PackageRepository::getCredentials($repo_url);
 
 			$this->logger->info("Download $id-".$desc->getVersion()->toVersionString().".zip");
@@ -627,11 +628,11 @@ class Installer {
 			fclose($handle);
 			$num++;
 
-			// (re-)apply patches
-			$this->logger->info("Apply patches for $id");
-			$this->reapplyPatches($updatedExtensions);
 		}
 
+		// (re-)apply patches
+		$this->logger->info("Apply patches for $id");
+		$this->reapplyPatches($updatedExtensions);
 
 
 	}
@@ -715,7 +716,7 @@ class Installer {
 					$installDirectory = $this->getNonPublicDirectory($desc);
 				}
 				$this->logger->info("Mark extension as initialized: ".$desc->getID());
-				$dfgOut->outputln("[Clean up...");
+				$dfgOut->outputln("[Clean up ".$desc->getID()."...");
 				unlink($installDirectory."/init$.ext");
 				$dfgOut->output("done.]\n\n");
 			}
@@ -725,7 +726,7 @@ class Installer {
 		global $dfgForce;
 		foreach($localPackages as $tupl) {
 			list($desc, $fromVersion) = $tupl;
-				
+
 			// mark as initialized
 			$installDirectory = $this->rootDir."/".$desc->getInstallationDirectory();
 			if ($desc->isNonPublic()) {
@@ -741,10 +742,10 @@ class Installer {
 			$res_installer->installOrUpdateWikidumps($desc, $fromVersion, $this->force ? DEPLOYWIKIREVISION_FORCE : DEPLOYWIKIREVISION_WARN);
 			$res_installer->installOrUpdateMappings($desc);
 			$res_installer->installNamespaces($desc);
-			
+				
 
 			$this->logger->info("Mark extension as initialized: ".$desc->getID());
-			$dfgOut->outputln("[Clean up...");
+			$dfgOut->outputln("[Clean up ".$desc->getID()."...");
 			unlink($installDirectory."/init$.ext");
 			$dfgOut->output("done.]\n\n");
 
