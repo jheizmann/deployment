@@ -61,7 +61,7 @@ $(function() {
 			if (timer) clearTimeout(timer);
 			timer = setTimeout( periodicLogLoad, 5000);
 			
-			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
+			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
 			$.ajax( { url : readLogurl, dataType:"json", complete : function(xhr3, status3) { 
 				var resultLog = xhr3.responseText;
 				var length = resultLog.length;
@@ -115,7 +115,7 @@ $(function() {
 			if (timer) clearTimeout(timer);
 			timer = setTimeout( periodicLogLoad, 5000);
 			
-			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
+			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
 			$.ajax( { url : readLogurl, dataType:"json", complete : function(xhr3, status3) { 
 				var resultLog = xhr3.responseText;
 				if (resultLog != '') {
@@ -128,7 +128,7 @@ $(function() {
 					clearTimeout(timer);
 					$('#df_progress_indicator').hide();
 					// start finalize
-					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=finalize&rsargs[]=";
+					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=finalize&rsargs[]=";
 					$.ajax( { url : finalizeurl, dataType:"json", complete : finalizeStarted });
 				}
 				
@@ -140,7 +140,7 @@ $(function() {
 					$dialog.dialog('option', 'errorstatus', 'true');
 					
 					// start finalize
-					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=finalize&rsargs[]=";
+					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=finalize&rsargs[]=";
 					$.ajax( { url : finalizeurl, dataType:"json", complete : finalizeStarted });
 				}
 				
@@ -167,7 +167,7 @@ $(function() {
 			if (timer) clearTimeout(timer);
 			timer = setTimeout( periodicLogLoad, 5000);
 			
-			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
+			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
 			$.ajax( { url : readLogurl, dataType:"json", complete : function(xhr3, status3) { 
 				var resultLog = xhr3.responseText;
 				if (resultLog != '') { 
@@ -180,7 +180,7 @@ $(function() {
 					clearTimeout(timer);
 					$('#df_progress_indicator').hide();
 					// start finalize
-					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=finalize&rsargs[]=";
+					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=finalize&rsargs[]=";
 					$.ajax( { url : finalizeurl, dataType:"json", complete : finalizeStarted });
 				}
 				
@@ -216,7 +216,7 @@ $(function() {
 			if (timer) clearTimeout(timer);
 			timer = setTimeout( periodicLogLoad, 5000);
 			
-			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
+			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
 			$.ajax( { url : readLogurl, dataType:"json", complete : function(xhr3, status3) { 
 				var resultLog = xhr3.responseText;
 				if (resultLog != '') { 
@@ -229,7 +229,7 @@ $(function() {
 					clearTimeout(timer);
 					$('#df_progress_indicator').hide();
 					// start finalize
-					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=finalize&rsargs[]=";
+					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=finalize&rsargs[]=";
 					$.ajax( { url : finalizeurl, dataType:"json", complete : finalizeStarted });
 				}
 				
@@ -264,7 +264,7 @@ $(function() {
 			if (timer) clearTimeout(timer);
 			timer = setTimeout( periodicLogLoad, 5000);
 			
-			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
+			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
 			$.ajax( { url : readLogurl, dataType:"json", complete : function(xhr3, status3) { 
 				var resultLog = xhr3.responseText;
 				if (resultLog != '') { 
@@ -277,7 +277,7 @@ $(function() {
 					clearTimeout(timer);
 					$('#df_progress_indicator').hide();
 					// start finalize
-					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=finalize&rsargs[]=";
+					var finalizeurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=finalize&rsargs[]=";
 					$.ajax( { url : finalizeurl, dataType:"json", complete : finalizeStarted });
 				}
 				
@@ -438,10 +438,10 @@ $(function() {
 				var id = parts[1];
 				var version = parts[2].split("_")[0];
 				var patchlevel = parts[2].split("_")[1];
-				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getDependencies&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
+				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=getDependencies&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
 				var callbackForExtensions = function(xhr, status) {
 					var extensionsToInstall = $.parseJSON(xhr.responseText);
-					var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=install&rsargs[]="+encodeURIComponent(id+"-"+version);
+					var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=install&rsargs[]="+encodeURIComponent(id+"-"+version);
 										
 					var $dialog = $('#df_install_dialog')
 					.dialog( {
@@ -476,7 +476,7 @@ $(function() {
 	  			var id = parts[1];
 	  			var version = parts[2].split("_")[0];
 	  			var patchlevel = parts[2].split("_")[1];
-				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getDependencies&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
+				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=getDependencies&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
 				var callbackForExtensions = function(xhr, status) {
 					
 					var extensionsToInstall = $.parseJSON(xhr.responseText);
@@ -533,7 +533,7 @@ $(function() {
 			                  click: function() {
 			                  	$( this ).dialog( "close" );
 			          			
-	                			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=update&rsargs[]="+encodeURIComponent(id+"-"+version);
+	                			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=update&rsargs[]="+encodeURIComponent(id+"-"+version);
 	                			var $dialog = $('#df_install_dialog')
 	                			.dialog( {
 	                				autoOpen : false,
@@ -568,7 +568,7 @@ $(function() {
 			// addhandler for click on extension column
 			$('#df_search_results .df_extension_id').click(function(e2) {
 				var id = $(e2.currentTarget).html();
-				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getDeployDescriptor&rsargs[]="+encodeURIComponent(id);
+				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=getDeployDescriptor&rsargs[]="+encodeURIComponent(id);
 				var $dialog = $('#df_extension_details')
 				.dialog( {
 					autoOpen : false,
@@ -588,7 +588,7 @@ $(function() {
 				var id = $(e2.currentTarget).attr('extid');
 				var version = $(e2.currentTarget).attr('version');
 				version = version.split("_")[0]; // remove patchlevel
-				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getDeployDescriptor&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
+				var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=getDeployDescriptor&rsargs[]="+encodeURIComponent(id)+"&rsargs[]="+encodeURIComponent(version);
 				var $dialog = $('#df_extension_details')
 				.dialog( {
 					autoOpen : false,
@@ -606,7 +606,7 @@ $(function() {
 		}
 		var searchvalue = $('#df_searchinput').val();
 		$('#df_search_progress_indicator').show();
-		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=search&rsargs[]="+encodeURIComponent(searchvalue);
+		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=search&rsargs[]="+encodeURIComponent(searchvalue);
 		$('#df_search_results').load(url, null, callbackHandler);
 	
 	};
@@ -637,7 +637,7 @@ $(function() {
 			
 		};
 		$('#df_settings_progress_indicator').show();
-		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=addToRepository&rsargs[]="+encodeURIComponent($('#df_newrepository_input').val());
+		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=addToRepository&rsargs[]="+encodeURIComponent($('#df_newrepository_input').val());
 		$.ajax( { url : url, dataType:"json", complete : addToRepositoryCallack });
 	}
 	
@@ -664,7 +664,7 @@ $(function() {
 					window.location.href = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?tab=4";
 			};
 			$('#df_settings_progress_indicator').show();
-			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=removeFromRepository&rsargs[]="+encodeURIComponent(entry.val());
+			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=removeFromRepository&rsargs[]="+encodeURIComponent(entry.val());
 			$.ajax( { url : url, dataType:"json", complete : removeFromRepositoryCallack });
 		        
 		 });
@@ -732,7 +732,7 @@ $(function() {
 				$('#df_settings_textfield').val("");
 				return;
 			}
-			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getLocalSettingFragment&rsargs[]="+encodeURIComponent(selectedId);
+			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=getLocalSettingFragment&rsargs[]="+encodeURIComponent(selectedId);
 			$.ajax( { url : url, dataType:"json", complete : getLocalSettingsCallback });
 		});
 		
@@ -757,7 +757,7 @@ $(function() {
 		// register every extension in status view for showing extension details on a click event.
 		$('.df_extension_id').click(function(e2) {
 			var id = $(e2.currentTarget).html();
-			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=getLocalDeployDescriptor&rsargs[]="+encodeURIComponent(id);
+			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=getLocalDeployDescriptor&rsargs[]="+encodeURIComponent(id);
 			var $dialog = $('#df_extension_details')
 			.dialog( {
 				autoOpen : false,
@@ -791,7 +791,7 @@ $(function() {
 		                  click: function() {
 		                  	$( this ).dialog( "close" );
 		                  
-		        			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=deinstall&rsargs[]="+encodeURIComponent(id);
+		        			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=deinstall&rsargs[]="+encodeURIComponent(id);
 		        			var $dialog = $('#df_install_dialog')
 		        			.dialog( {
 		        				autoOpen : false,
@@ -844,7 +844,7 @@ $(function() {
 		                  click: function() {
 		                  	$( this ).dialog( "close" );
 		          			
-                			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=update&rsargs[]="+encodeURIComponent(id+"-"+version);
+                			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=update&rsargs[]="+encodeURIComponent(id+"-"+version);
                 			var $dialog = $('#df_install_dialog')
                 			.dialog( {
                 				autoOpen : false,
@@ -908,7 +908,7 @@ $(function() {
 			                  text: dfgWebAdminLanguage.getMessage('df_webadmin_doupdate'),
 			                  click: function() {
 			                  	$( this ).dialog( "close" );
-			          							var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=doGlobalUpdate&rsargs[]=";
+			          							var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=doGlobalUpdate&rsargs[]=";
 			          							var $dialog = $('#df_install_dialog')
 			          							.dialog( {
 			          								autoOpen : false,
@@ -940,7 +940,7 @@ $(function() {
 				});
 			}
 			$('#df_gu_progress_indicator').show();
-			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=checkforGlobalUpdate&rsargs[]=";
+			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=checkforGlobalUpdate&rsargs[]=";
 			$.ajax( { url : url, dataType:"json", complete : checkforGlobalUpdate });
 		});
 		
@@ -948,7 +948,7 @@ $(function() {
 		$('.df_installfile_button').click(function(e2) {
 			var filepath = $(e2.currentTarget).attr('loc');
 		
-			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=install&rsargs[]="+encodeURIComponent(filepath);
+			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=install&rsargs[]="+encodeURIComponent(filepath);
 			var $dialog = $('#df_install_dialog')
 			.dialog( {
 				autoOpen : false,
@@ -973,7 +973,7 @@ $(function() {
 		$('.df_removefile_button').click(function(e2) {
 			var filepath = $(e2.currentTarget).attr('loc');
 			$(e2.currentTarget).parent().parent().remove();
-			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=removeFile&rsargs[]="+encodeURIComponent(filepath);
+			var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=removeFile&rsargs[]="+encodeURIComponent(filepath);
 			
 			$.ajax( { url : url, dataType:"json" });
 		});
@@ -995,7 +995,7 @@ $(function() {
 			if (timer) clearTimeout(timer);
 			timer = setTimeout( periodicLogLoad, 5000);
 			
-			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
+			var readLogurl = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=readLog&rsargs[]="+encodeURIComponent(logfile);
 			$.ajax( { url : readLogurl, dataType:"json", complete : function(xhr3, status3) { 
 				var resultLog = xhr3.responseText;
 				if (resultLog != '') { 
@@ -1041,7 +1041,7 @@ $(function() {
 	 */
 	var restoreHandler = function(e) {
 		var restorepoint = $('#df_restorepoint').val();
-		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=createRestorePoint&rsargs[]="+encodeURIComponent(restorepoint);
+		var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=createRestorePoint&rsargs[]="+encodeURIComponent(restorepoint);
 		var $dialog = $('#df_install_dialog')
 		.dialog( {
 			autoOpen : false,
@@ -1086,7 +1086,7 @@ $(function() {
 	                  click: function() {
 	                  	$( this ).dialog( "close" );
 	                  	
-	                  	var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=restore&rsargs[]="+encodeURIComponent(restorepoint);
+	                  	var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=restore&rsargs[]="+encodeURIComponent(restorepoint);
 	            		var $dialog = $('#df_install_dialog')
 	            		.dialog( {
 	            			autoOpen : false,
@@ -1132,7 +1132,7 @@ $(function() {
 	                  click: function() {
 	                  	$( this ).dialog( "close" );
 	                  	
-	                  	var url = wgServer+wgScriptPath+"/deployment/tools/webadmin?rs=removeRestorePoint&rsargs[]="+encodeURIComponent(restorepoint);
+	                  	var url = wgServer+wgScriptPath+"/deployment/tools/webadmin/index.php?rs=removeRestorePoint&rsargs[]="+encodeURIComponent(restorepoint);
 	            		var $dialog = $('#df_install_dialog')
 	            		.dialog( {
 	            			autoOpen : false,
