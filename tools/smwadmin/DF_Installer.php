@@ -1115,6 +1115,7 @@ class Installer {
 				foreach($versions as $v) {
 					$ptoUpdate = PackageRepository::getDeployDescriptor($p->getID(), $v);
 					$depToUpdate = $ptoUpdate->getDependency($dd->getID());
+					if (is_null($depToUpdate)) continue; // dependency may be removed in the meantime.
 					if ($depToUpdate->getMinVersion()->isLowerOrEqual($dd->getVersion()) && $dd->getVersion()->isLowerOrEqual($depToUpdate->getMaxVersion())) {
 
 						$packagesToUpdate[] = array($p, $v, $v);
