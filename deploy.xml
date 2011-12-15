@@ -4,7 +4,7 @@
 		<id>wikiadmintool</id>
 		<title>Wiki Administration Tool</title>
 		<version>1.6.0</version>
-		<patchlevel>5</patchlevel>
+		<patchlevel>6</patchlevel>
 		<vendor>ontoprise GmbH</vendor>
 		<maintainer>ontoprise GmbH</maintainer>
 		<instdir>deployment</instdir>
