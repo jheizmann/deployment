@@ -302,7 +302,10 @@ function createRepositoryEntry($repoDoc, $dd, $repositoryURL) {
 	$versionAttr = $repoDoc->createAttribute("ver");
 	$versionAttr->value = $dd->getVersion();
 	$newVer->appendChild($versionAttr);
-
+	
+	$versionAttr = $repoDoc->createAttribute("version");
+    $versionAttr->value = $dd->getVersion();
+    $newVer->appendChild($versionAttr);
 
 	$patchlevelAttr = $repoDoc->createAttribute("patchlevel");
 	$patchlevelAttr->value = $dd->getPatchlevel();
