@@ -79,7 +79,7 @@ class ImportOntologyBot extends GardeningBot {
         chdir($IP.'/deployment/tools');
             
         print "\nImport file: $fileLocation";
-        exec($IP.'/deployment/tools/smwadmin -i "'.$fileLocation.'"', $out, $ret);
+        exec($IP.'/deployment/tools/smwadmin -i "'.$fileLocation.'" --nocheck', $out, $ret);
         $statusText = implode("\n", $out);
         return $statusText;
     }
