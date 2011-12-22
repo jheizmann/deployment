@@ -78,8 +78,13 @@ class ImportOntologyBot extends GardeningBot {
         global $IP;
         chdir($IP.'/deployment/tools');
             
+        if (isset(DF_Config::$settings['df_php_executable']) && DF_Config::$settings['df_php_executable'] != '') {
+        	$phpExe = '"'.DF_Config::$settings['df_php_executable'].'"';
+        } else {
+        	$phpExe = "php";
+        }
         print "\nImport file: $fileLocation";
-        exec($IP.'/deployment/tools/smwadmin -i "'.$fileLocation.'" --nocheck', $out, $ret);
+        exec($phpExe.' '.$IP.'/deployment/tools/smwadmin/smwadmin.php -i "'.$fileLocation.'" --nocheck', $out, $ret);
         $statusText = implode("\n", $out);
         return $statusText;
     }
