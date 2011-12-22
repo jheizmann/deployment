@@ -72,8 +72,7 @@ class ImportOntologyBot extends GardeningBot {
         }
         
         $fileName = urldecode($paramArray['GARD_IO_FILENAME']);
-
-        $fileTitle = Title::newFromText($fileName);
+        $fileTitle = Title::newFromText($fileName, NS_FILE);
         $fileLocation = wfFindFile($fileTitle)->getPath();
 
         global $IP;
