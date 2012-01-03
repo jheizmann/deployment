@@ -225,20 +225,23 @@ class DFCommandInterface {
 	public function install($extid) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -i \"$extid\"";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -i \"$extid\" > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -i \"$extid\"";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -i \"$extid\" > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -247,20 +250,23 @@ class DFCommandInterface {
 	public function deinstall($extid) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -d \"$extid\"";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -d \"$extid\" > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -d \"$extid\"";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -d \"$extid\" > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -269,19 +275,22 @@ class DFCommandInterface {
 	public function update($extid) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u \"$extid\"";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u \"$extid\" > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u \"$extid\"";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u \"$extid\" > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -290,20 +299,23 @@ class DFCommandInterface {
 	public function finalize($extid) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --finalize";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --finalize > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --finalize";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --finalize > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -333,20 +345,23 @@ class DFCommandInterface {
 	public function doGlobalUpdate() {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -u > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -355,20 +370,23 @@ class DFCommandInterface {
 	public function restore($restorepoint) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -r $restorepoint";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -r $restorepoint > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -r $restorepoint";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask -r $restorepoint > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -377,20 +395,23 @@ class DFCommandInterface {
 	public function removeRestorePoint($restorepoint) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rremove $restorepoint";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rremove $restorepoint > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rremove $restorepoint";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rremove $restorepoint > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -399,20 +420,23 @@ class DFCommandInterface {
 	public function createRestorePoint($restorepoint) {
 		global $mwrootDir, $dfgOut;
 
-		$filename = uniqid().".log";
-		$logger = Logger::getInstance();
-		$logdir = $logger->getLogDir();
-		touch("$logdir/$filename");
+		$unique_id = uniqid();
+        $filename = $unique_id.".log";
+        $logger = Logger::getInstance();
+        $logdir = $logger->getLogDir();
+        touch("$logdir/$filename");
+        
+        $console_out = "$logdir/$filename.console_out";
 
 		chdir($mwrootDir.'/deployment/tools');
 		$php = $this->phpExe;
 		if (Tools::isWindows()) {
 			$wshShell = new COM("WScript.Shell");
-			$runCommand = "cmd $this->keepCMDWindow START ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rcreate $restorepoint";
+			$runCommand = "cmd $this->keepCMDWindow  ".$this->quotePathForWindowsCMD($php)." \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rcreate $restorepoint > \"$console_out\" 2>&1";
 			$oExec = $wshShell->Run("$runCommand", 7, false);
 
 		} else {
-			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rcreate $restorepoint";
+			$runCommand = "\"$php\" \"$mwrootDir/deployment/tools/smwadmin/smwadmin.php\" --logtofile $filename --outputformat html --nocheck --noask --rcreate $restorepoint > \"$console_out\" 2>&1";
 			$nullResult = `$runCommand &`;
 		}
 		return $filename;
@@ -571,7 +595,7 @@ class DFCommandInterface {
 	}
 
 	/**
-	 * Special quoting for cmd /c START ....
+	 * Special quoting for cmd /c  ....
 	 * Quotes only if necessary and then like this:  d:\"my folder"
 	 *
 	 * @param string $path
