@@ -17,6 +17,10 @@
  *
  */
 
+if ( isset( $_SERVER ) && array_key_exists( 'REQUEST_METHOD', $_SERVER ) ) {
+    die( "This script must be run from the command line\n" );
+}
+
 global $rootDir;
 $rootDir = dirname(__FILE__);
 $rootDir = str_replace("\\", "/", $rootDir);
