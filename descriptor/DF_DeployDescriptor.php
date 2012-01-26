@@ -545,27 +545,27 @@ class DeployDescriptor {
 	 * @param array of DeployDescriptor $localPackages
 	 * @return array of string (patch file paths)
 	 */
-	function getUninstallPatches($localPackages) {
+    function getUninstallPatches($localPackages) {
 
-		$patches = array();
-		foreach($this->uninstallpatches as $patch) {
-			foreach($localPackages as $id => $lp) {
+        $patches = array();
+        foreach($this->uninstallpatches as $patch) {
+            foreach($localPackages as $id => $lp) {
 
-				$ext_id = $patch->getID();
-				$pf = $patch->getPatchfile();
-				if (empty($ext_id) && !in_array($pf, $patches)) { // add patches without extension constraint
-					$patches[] = $pf;
-					continue;
-				}
-				$fromVersion = $patch->getMinversion();
-				$toVersion = $patch->getMaxversion();
-				if ($lp->getID() == $ext_id && $fromVersion->isLowerOrEqual($lp->getVersion()) && $lp->getVersion()->isLowerOrEqual($toVersion)) {
-					$patches[] = $patch;
-				}
-			}
-		}
-		return $patches;
-	}
+                $ext_id = $patch->getID();
+                $pf = $patch->getPatchfile();
+                if (empty($ext_id) && !DFPatch::containsPatchfile($patches, $patch)) {
+                    $patches[] = $patch;
+                    continue;
+                }
+                $fromVersion = $patch->getMinversion();
+                $toVersion = $patch->getMaxversion();
+                if ($lp->getID() == $ext_id && $fromVersion->isLowerOrEqual($lp->getVersion()) && $lp->getVersion()->isLowerOrEqual($toVersion)) {
+                    $patches[] = $patch;
+                }
+            }
+        }
+        return $patches;
+    }
 
 	/**
 	 * Returns locations of files explicitly marked as codefiles in the deploy descriptor (relative paths).
