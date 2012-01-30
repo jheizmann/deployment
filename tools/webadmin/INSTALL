@@ -68,10 +68,22 @@ Windows 7 (should also work on XP):
          
     (3) Execute it.
     
+    
     You can change the user which is used for executing this requests in settings.php (normally not necessary)
     
         public static $df_runas_user = "wikiadmin";
         public static $df_runas_password = "geheim";
+        
+    Note:
+    
+    There is a maintenace script which create stubs for these tasks: 
+        
+        deployment/maintenace/installServerTasks.php
+    
+    In non-SMW+ environments, you need to adjust the stubs 
+    afterwards because the run commands only contain:
+    
+        "add your script here"
         
 Linux:
 
