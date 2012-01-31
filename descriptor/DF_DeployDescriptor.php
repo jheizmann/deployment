@@ -576,7 +576,7 @@ class DeployDescriptor {
 	function getCodefiles() {
 		if (!is_null($this->codefiles)) return $this->codefiles;
 		$this->codefiles = array();
-
+       if (!is_array($this->codefiles_xml)) return array();
 		foreach($this->codefiles_xml as $file) {
 
 			$this->codefiles[] = (string) $file->attributes()->loc;
@@ -591,6 +591,7 @@ class DeployDescriptor {
 	function getWikidumps() {
 		if (!is_null($this->wikidumps)) return $this->wikidumps;
 		$this->wikidumps = array();
+		if (!is_array($this->wikidumps_xml)) return array();
 		foreach($this->wikidumps_xml as $file) {
 			$this->wikidumps[] = (string) $file->attributes()->loc;
 		}
@@ -604,6 +605,7 @@ class DeployDescriptor {
 	function getOntologies() {
 		if (!is_null($this->ontologies)) return $this->ontologies;
 		$this->ontologies = array();
+		if (!is_array($this->ontologies_xml)) return array();
 		foreach($this->ontologies_xml as $file) {
 			$this->ontologies[] = (string) $file->attributes()->loc;
 		}
@@ -617,6 +619,7 @@ class DeployDescriptor {
 	function getMappings() {
 		if (!is_null($this->mappings)) return $this->mappings;
 		$this->mappings = array();
+		if (!is_array($this->mappings)) return array();
 		foreach($this->mappings_xml as $file) {
 			$loc = (string) $file->attributes()->loc;
 			$source = (string) $file->attributes()->source;
@@ -638,6 +641,7 @@ class DeployDescriptor {
 
 		if (!is_null($this->resources)) return $this->resources;
 		$this->resources = array();
+		if (!is_array($this->resources_xml)) return array();	
 		foreach($this->resources_xml as $file) {
 			$this->resources[] = (string) $file->attributes()->loc;
 		}
@@ -652,6 +656,7 @@ class DeployDescriptor {
 
 		if (!is_null($this->oc_resources)) return $this->oc_resources;
 		$this->oc_resources = array();
+		if (!is_array($this->resources_onlycopyxml)) return array();
 		foreach($this->resources_onlycopyxml as $file) {
 			$dest = (string) $file->attributes()->dest;
 			$loc = (string) $file->attributes()->loc;
