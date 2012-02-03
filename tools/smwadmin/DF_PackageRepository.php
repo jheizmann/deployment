@@ -518,6 +518,7 @@ class PackageRepository {
 							$res = Tools::setNonPublicAppPath($ext_dir, Tools::$df_knownPrograms[$prgname], $path);
 						}
 					}
+					$path = Tools::unquotePath($path);
 					if (file_exists($path.'/deploy.xml')) {
 						$dd = new DeployDescriptor(file_get_contents($path.'/deploy.xml'));
 						if (!array_key_exists($dd->getID(), self::$localPackages)) {
@@ -531,6 +532,7 @@ class PackageRepository {
 			// add non public apps for Linux
 			$nonPublicAppPaths = Tools::getNonPublicAppPath($ext_dir);
 			foreach($nonPublicAppPaths as $id => $path) {
+				$path = Tools::unquotePath($path);
 				if (file_exists($path.'/deploy.xml')) {
 					$dd = new DeployDescriptor(file_get_contents($path.'/deploy.xml'));
 					if (!array_key_exists($dd->getID(), self::$localPackages)) {

@@ -235,6 +235,15 @@ class Tools {
 	public static function makeUnixPath($path) {
 		return str_replace("\\", "/", $path);
 	}
+	
+	public static function unquotePath($path) {
+		$path = trim($path);
+		if ($path == '') return '';
+		if (substr($path,0, 1) == '"' && substr($path, -1) == '"') {
+			return substr($path, 1, strlen($path) - 2);
+		}
+		return $path;
+	}
 
 	public static function inStringArray($arr, $needle) {
 		foreach($arr as $a) {
