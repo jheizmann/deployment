@@ -247,7 +247,7 @@ class Tools {
 
 	public static function inStringArray($arr, $needle) {
 		foreach($arr as $a) {
-			if (strpos($a, $needle) !== false) {
+			if (strpos($needle, $a) !== false) {
 				return true;
 			}
 		}
