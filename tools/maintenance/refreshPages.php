@@ -20,15 +20,16 @@
 /**
  * @file
  * @ingroup DFMaintenance
- * 
- * Refreshes pages contained in a dump file.
+ *
+ * Refreshes pages contained in a dump file. It also refreshes pages which
+ * uses properties that are newly imported or overwritten. This is necessary 
+ * in case the type changes.
  *
  * Usage: php refreshPages -d <dump file> -b <bundle ID>
  *
  * @author: Kai Kühn
  *
  */
-
 if ( isset( $_SERVER ) && array_key_exists( 'REQUEST_METHOD', $_SERVER ) ) {
     die( "This script must be run from the command line\n" );
 }
@@ -51,7 +52,7 @@ require_once($rootDir.'/io/DF_Log.php');
 global $wgLanguageCode, $dfgLang;
 $langClass = "DF_Language_$wgLanguageCode";
 if (!file_exists("$rootDir/languages/$langClass.php")) {
-	$langClass = "DF_Language_En";
+    $langClass = "DF_Language_En";
 }
 //Load Settings
 if(file_exists($rootDir.'/settings.php'))
@@ -63,56 +64,105 @@ $dfgLang = new $langClass();
 
 for( $arg = reset( $argv ); $arg !== false; $arg = next( $argv ) ) {
 
-	//-d => repository directory
-	if ($arg == '-d') {
-		$dumpFilePath = next($argv);
-		continue;
-	}
+    //-d => repository directory
+    if ($arg == '-d') {
+        $dumpFilePath = next($argv);
+        continue;
+    }
 
-	//-b => bundleID
-	if ($arg == '-b') {
-		$bundleID = next($argv);
-		continue;
-	}
+    //-b => bundleID
+    if ($arg == '-b') {
+        $bundleID = next($argv);
+        continue;
+    }
 
 }
 
 if (!isset($dumpFilePath) || !isset($bundleID)) {
-	echo "\nUsage: php refreshPages.php -d <dump-dir> -b <bundle-ID>\n";
-	die(1);
+    echo "\nUsage: php refreshPages.php -d <dump-dir> -b <bundle-ID>\n";
+    die(1);
 }
 
+// get pages from bundle
 $handle = fopen( $dumpFilePath, 'rt' );
 $source = new ImportStreamSource( $handle );
 $importer = new DeployWikiImporterDetector( $source, $bundleID);
-
 $importer->setDebug( false );
-
 $importer->doImport();
-
 $pageTitles = $importer->getResult();
 
+// get pages which use the imported properties
+$subjectToRefresh = array();
+foreach($pageTitles as $tuple) {
+    list($t, $status) = $tuple;
+    if ($t->getNamespace() == SMW_NS_PROPERTY) {
+        $subjects = smwfGetStore()->getAllPropertySubjects(SMWDIProperty::newFromUserLabel($t->getText()));
+        foreach($subjects as $s) {
+            $subjectToRefresh[] = $s->getTitle();
+        }
+    }
+}
+$subjectToRefresh = dffMakeTitleListUnique($subjectToRefresh);
 
 // refresh imported pages
 $logger = Logger::getInstance();
-
-$logger->info("Refreshing ontology: $dumpFilePath");
-print "\n[Refreshing ontology: $dumpFilePath. Total number of pages: ".count($pageTitles);
+$logger->info("Refreshing pages: $dumpFilePath");
+print "\n[Refreshing pages: $dumpFilePath. Total number of pages: ".count($pageTitles);
 
 $i = 0;
 foreach($pageTitles as $tuple) {
-	list($t, $status) = $tuple;
+    list($t, $status) = $tuple;
 
-	$i++;
-	if ($t->getNamespace() == NS_FILE) continue;
-	
-	smwfGetStore()->refreshData($t->getArticleId(), 1, false, false);
-	$logger->info("($i) ". $t->getPrefixedText()." refreshed.");
-	print "\n\t[ ($i) ".$t->getPrefixedText()." refreshed]";
+    $i++;
+    if ($t->getNamespace() == NS_FILE) continue;
+
+    smwfGetStore()->refreshData($t->getArticleId(), 1, false, false);
+    $logger->info("($i) ". $t->getPrefixedText()." refreshed.");
+    print "\n\t[ ($i) ".$t->getPrefixedText()." refreshed]";
 }
+print "\ndone.]";
 
+// refresh other pages which use the imported properties
+$logger->info("Refreshing existing pages");
+print "\n[Refreshing existing pages. Total number of pages: ".count($subjectToRefresh);
+
+$i = 0;
+foreach($subjectToRefresh as $t) {
+    $i++;
+
+    smwfGetStore()->refreshData($t->getArticleId(), 1, false, false);
+    $logger->info("($i) ". $t->getPrefixedText()." refreshed.");
+    print "\n\t[ ($i) ".$t->getPrefixedText()." refreshed]";
+}
+print "\ndone.]";
+
+// update TSC (if configured)
 if (defined('SMW_HALO_VERSION') && smwfIsTripleStoreConfigured()) {
     print "\nSending sync commands to TSC...";
     smwfGetStore()->initialize(false);
     print "\nIt may take some time for the TSC to re-sync. It depends on the size of your wiki.";
+}
+
+
+function dffMakeTitleListUnique($titles) {
+    usort($titles, "dffCompareTitles");
+
+    $result = array();
+    $last = reset($titles);
+    if ($last !== false) $result[] = $last;
+    for($i = 1, $n = count($titles); $i < $n; $i++ ) {
+        if ($titles[$i]->getPrefixedText() == $last->getPrefixedText()) {
+            $titles[$i] = NULL;
+            continue;
+        }
+        $last = $titles[$i];
+        $result[] = $titles[$i];
+    }
+
+    return $result;
+}
+
+/* callback methods */
+function dffCompareTitles($a, $b) {
+    return strcmp($a->getPrefixedText(), $b->getPrefixedText());
 }
