@@ -110,3 +110,9 @@ foreach($pageTitles as $tuple) {
 	$logger->info("($i) ". $t->getPrefixedText()." refreshed.");
 	print "\n\t[ ($i) ".$t->getPrefixedText()." refreshed]";
 }
+
+if (defined('SMW_HALO_VERSION') && smwfIsTripleStoreConfigured()) {
+    print "\nSending sync commands to TSC...";
+    smwfGetStore()->initialize(false);
+    print "\nIt may take some time for the TSC to re-sync. It depends on the size of your wiki.";
+}
