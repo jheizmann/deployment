@@ -49,24 +49,27 @@ if ($envCheck !== true) {
 
 $loginHint = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	session_start();
+	
+	// make sure that no other user is currently logged in
+    $currentDir = dirname(__FILE__);
+    if (file_exists("$currentDir/sessiondata/userloggedin")) {
+        $lastMod = filemtime("$currentDir/sessiondata/userloggedin");
+        $currenttime = time();
+        
+        // timeout is 15 min
+        if ($currenttime - $lastMod < 900) {
+            print "User already logged in. Try again later.";
+            exit();
+        }
+    }
 
-	$username = $_POST['username'];
-	$passwort = $_POST['passwort'];
+    session_start();
 
-	$hostname = $_SERVER['HTTP_HOST'];
-	$path = dirname($_SERVER['PHP_SELF']);
-	$currentDir = dirname(__FILE__);
+    $username = $_POST['username'];
+    $passwort = $_POST['passwort'];
 
-	if (file_exists("$currentDir/tools/webadmin/sessiondata/userloggedin")) {
-		$lastMod = filemtime("$currentDir/tools/webadmin/sessiondata/userloggedin");
-		$currenttime = time();
-
-		if ($currenttime - $lastMod < 3600) {
-			print "User already logged in. Try again later.";
-			exit();
-		}
-	}
+    $hostname = $_SERVER['HTTP_HOST'];
+    $path = dirname($_SERVER['PHP_SELF']);
 
 	// user name and password is checked
 	if (DF_Config::$df_authorizeByWiki) {
